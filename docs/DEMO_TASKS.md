@@ -21,18 +21,18 @@ Tài liệu này tổng hợp đúng và đủ toàn bộ đầu việc để ho
 ## 1. Lộ trình thực hiện trong 2 ngày (theo Mục 8 Handover)
 
 ### Ngày 1 — Quyền, Hạ tầng & Bản lõi cả 2 demo
-- [ ] **Giờ đầu:** Kiểm tra quyền tạo VPC, EC2, ALB, ElastiCache và dùng instance profile cho SSM (nếu có SCP hoặc thiếu quyền thì xử lý với người quản lý tài khoản ngay, không đợi code xong mới kiểm tra).
-- [ ] Chốt region (`ap-southeast-1` nếu tài khoản cho phép), quy ước tag (`Project=quiz-service-seminar` + tag owner/expiry nội bộ), cách quản lý credential ngoài Git/image, và chốt hợp đồng API theo Mục 5 Handover.
-- [ ] Dựng VPC/SG, 2 EC2, ALB, 3 Target Groups, Listener Rules; chạy app A/B và hoàn thành **Demo ALB** trước (vì `/health` và `/api/whoami` không cần cache).
-- [ ] Tạo **ElastiCache for Valkey** + RBAC user/user group; kiểm tra kết nối TLS/RBAC từ EC2 tới Valkey.
-- [ ] Hoàn thành 2 adapter (`memory` và `elasticache`), route pin `/lab/a/*`, `/lab/b/*` (tự strip prefix trong app) và giao diện HTML/JS. Cuối ngày chạy được bản lõi cả 2 demo.
+- [x] **Giờ đầu:** Kiểm tra quyền tạo VPC, EC2, ALB, ElastiCache và dùng instance profile cho SSM *(đã kiểm tra: `ap-southeast-1` bị SCP `p-3qq7zdmg` chặn nên chuyển sang `ap-southeast-2` được phép)*.
+- [x] Chốt region (`ap-southeast-2`), quy ước tag (`Project=quiz-service-seminar`), cách quản lý credential ngoài Git/image (`/etc/quizlab/env` + SSM `SecureString`), và chốt hợp đồng API theo Mục 5 Handover.
+- [x] Dựng VPC/SG, 2 EC2, ALB, 3 Target Groups, Listener Rules; chạy app A/B và hoàn thành **Demo ALB** trước.
+- [x] Tạo **ElastiCache for Valkey** + RBAC user/user group; kiểm tra kết nối TLS/RBAC từ EC2 tới Valkey (`PING -> PONG` 1ms).
+- [x] Hoàn thành 2 adapter (`memory` và `elasticache`), route pin `/lab/a/*`, `/lab/b/*` (tự strip prefix trong app) và giao diện HTML/JS. Chạy được bản lõi cả 2 demo.
 
 ### Ngày 2 — Sửa lỗi, Lặp lại, Quay video, Nghiệm thu & Cleanup
-- [ ] Sửa các lỗi mạng / TLS / health check / routing (nếu có); đối chiếu response, `backendId`, `storeMode` và thứ tự điểm.
-- [ ] Chạy lại toàn bộ kịch bản ít nhất **3 lần** để kiểm tra tính lặp lại; chốt thứ tự reset dữ liệu và khôi phục backend A giữa 2 demo.
-- [ ] Quay **2 video dự phòng** từ lab thật; chụp ảnh Console; lập biên bản nghiệm thu ngắn; tập thao tác mỗi demo tối đa **3 phút**.
+- [x] Sửa các lỗi phát sinh (Valkey default RBAC, SSM `put-parameter` tags/overwrite) và đối chiếu response, `backendId`, `storeMode`, thứ tự điểm.
+- [x] Chạy lại toàn bộ kịch bản **3 lần** (`Run #1`, `Run #2`, `Run #3`) kiểm tra tính lặp lại; chốt thứ tự reset dữ liệu và khôi phục backend A giữa 2 demo.
+- [ ] **Bạn tự thao tác tập & quay:** Quay **2 video dự phòng** từ lab thật (mỗi video ≤ 3 phút, có màn hình AWS Console); lưu ảnh Console; tập thao tác mỗi demo tối đa **3 phút**.
 - [ ] Phối hợp tổng duyệt toàn buổi seminar **20 phút** cùng người làm slide/thuyết trình.
-- [ ] Hoàn thành **cleanup** toàn bộ tài nguyên lab trên AWS và ghi danh sách đã xóa/còn giữ.
+- [ ] Chạy cleanup (`./seminar-lab/alb-elasticache/cleanup-aws.sh --yes`) sau khi xong và cập nhật xác nhận đã xóa vào [ACCEPTANCE_REPORT.md](file:///home/khoa/projects/live-quiz/docs/ACCEPTANCE_REPORT.md) + [DEMO_WORKLOG.md](file:///home/khoa/projects/live-quiz/docs/DEMO_WORKLOG.md).
 
 ---
 

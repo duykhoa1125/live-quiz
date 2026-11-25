@@ -2,85 +2,70 @@
 
 Ứng dụng lab độc lập phục vụ hai demo 3 phút trên AWS thật theo đặc tả trong [ALB_ElastiCache_Demo_Handover.md](../../docs/ALB_ElastiCache_Demo_Handover.md).
 
-> **Lưu ý bảo mật:** Không lưu mật khẩu Valkey, token hay AWS credentials trong file này hoặc trong Docker image. Luôn dùng file môi trường được bảo vệ riêng trên từng máy chủ EC2.
+> **Lưu ý bảo mật:** Không lưu mật khẩu Valkey, token hay AWS credentials trong file này hoặc trong Docker image. Mật khẩu được lưu an toàn trong SSM Parameter Store (`SecureString`) và file `/etc/quizlab/env` (`chmod 600`) trên từng máy chủ EC2.
 
 ---
 
-## 1. Cấu trúc mã nguồn
+## 1. Thông tin môi trường AWS đang chạy (`ap-southeast-2`)
+
+- **Region:** `ap-southeast-2` *(do SCP `p-3qq7zdmg` chặn `ap-southeast-1`)*
+- **Trang Lab (ALB DNS):** `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com`
+- **EC2 Backend A (`BACKEND_ID=A`):** `i-0cca77524a1964c16` (`ap-southeast-2a`)
+- **EC2 Backend B (`BACKEND_ID=B`):** `i-0ccf80b64328d1526` (`ap-southeast-2b`)
+- **ElastiCache Valkey (`8.2.0`, `cache.t4g.micro`):** `master.quizlab-valkey.x4rjiz.apse2.cache.amazonaws.com:6379` (TLS + RBAC `quizlab:*`)
+- **Chi tiết toàn bộ Resource IDs & Chi phí:** Xem [AWS_CONFIG_COST_CLEANUP.md](../../docs/AWS_CONFIG_COST_CLEANUP.md)
+
+---
+
+## 2. Cấu trúc mã nguồn
 
 - `src/server.js`: HTTP server (Node.js 24, port `3000`, bind `0.0.0.0`), tự bỏ prefix `/lab/a` và `/lab/b`, xử lý 2 adapter `memory` và `elasticache` (`ioredis` TLS + RBAC).
 - `public/index.html`: Giao diện 2 tab (`ALB` và `Shared leaderboard`), gửi request kèm `Cache-Control: no-store` và cache buster, hiển thị lỗi thật.
 - `Dockerfile`: Đóng gói trên `node:24-alpine`.
 - `.env.example`: Biến môi trường mẫu.
+- `cleanup-aws.sh`: Script xóa toàn bộ tài nguyên AWS gắn tag `Project=quiz-service-seminar` đúng thứ tự.
 
 ---
 
-## 2. Cấu hình biến môi trường
+## 3. Thao tác vận hành khi chạy Demo
 
-Tạo file môi trường riêng ngoài Git trên từng máy EC2 (ví dụ `/etc/quizlab/env`, quyền `chmod 600`):
-
-```dotenv
-PORT=3000
-BACKEND_ID=A
-VALKEY_HOST=<VALKEY_ENDPOINT>
-VALKEY_PORT=6379
-VALKEY_TLS=true
-VALKEY_USERNAME=<VALKEY_RBAC_USERNAME>
-VALKEY_PASSWORD=<VALKEY_RBAC_PASSWORD>
-VALKEY_TLS_REJECT_UNAUTHORIZED=true
+### Mở phiên SSM vào EC2 A (chuẩn bị sẵn trước demo)
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+aws ssm start-session --region ap-southeast-2 --target i-0cca77524a1964c16
 ```
 
-> Trên EC2 B đổi `BACKEND_ID=B`. Không đưa file chứa mật khẩu thật vào Git hay Docker image.
-
----
-
-## 3. Build và chạy bằng Docker trên EC2 A / B
-
+Bên trong phiên SSM của EC2 A:
 ```bash
-# Build image từ thư mục seminar-lab/alb-elasticache
-docker build -t quizlab:latest .
-
-# Chạy container trên EC2 A (dùng --restart unless-stopped để docker stop không tự bật lại)
-docker run -d \
-  --name quizlab \
-  --restart unless-stopped \
-  -p 3000:3000 \
-  --env-file /etc/quizlab/env \
-  quizlab:latest
-```
-
-Kiểm tra nhanh trên máy hoặc qua ALB:
-
-```bash
-curl -s http://localhost:3000/health
-curl -s http://localhost:3000/api/whoami
-curl -s http://localhost:3000/api/cache-status
-```
-
----
-
-## 4. Thao tác vận hành khi chạy Demo
-
-### Dừng và khởi động lại Backend A qua AWS SSM Session Manager
-```bash
-# Kiểm tra container đang chạy
-docker ps
+# Kiểm tra container
+sudo docker ps
 
 # Dừng ứng dụng A (Demo ALB & bước restart của Demo ElastiCache)
-docker stop quizlab
+sudo docker stop quizlab
 
 # Khởi động lại ứng dụng A
-docker start quizlab
+sudo docker start quizlab
+```
+
+### Hoặc Stop/Start nhanh bằng `aws ssm send-command`
+```bash
+aws ssm send-command --region ap-southeast-2 \
+  --instance-ids i-0cca77524a1964c16 \
+  --document-name AWS-RunShellScript \
+  --parameters 'commands=["docker stop quizlab"]'
+
+aws ssm send-command --region ap-southeast-2 \
+  --instance-ids i-0cca77524a1964c16 \
+  --document-name AWS-RunShellScript \
+  --parameters 'commands=["docker start quizlab"]'
 ```
 
 ### Reset dữ liệu phòng `demo` trước khi demo ElastiCache
 ```bash
-# Reset RAM riêng của cả A và B
-curl -X DELETE "http://<ALB_DNS>/lab/a/api/lab/rooms/demo?store=memory"
-curl -X DELETE "http://<ALB_DNS>/lab/b/api/lab/rooms/demo?store=memory"
-
-# Reset Sorted Set dùng chung trên ElastiCache
-curl -X DELETE "http://<ALB_DNS>/lab/a/api/lab/rooms/demo?store=elasticache"
+ALB="http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com"
+curl -s -X DELETE "$ALB/lab/a/api/lab/rooms/demo?store=memory"
+curl -s -X DELETE "$ALB/lab/b/api/lab/rooms/demo?store=memory"
+curl -s -X DELETE "$ALB/lab/a/api/lab/rooms/demo?store=elasticache"
 ```
 
 ### Các endpoint chính (đã tự bỏ prefix `/lab/a` và `/lab/b`)
@@ -93,14 +78,32 @@ curl -X DELETE "http://<ALB_DNS>/lab/a/api/lab/rooms/demo?store=elasticache"
 
 ---
 
+## 4. Chạy local / Build Docker (tham khảo dựng lại)
+
+```bash
+# Chạy local với Node.js 24 (chế độ memory; store=elasticache sẽ trả 503 nếu chưa trỏ Valkey)
+PORT=3000 BACKEND_ID=A npm start
+
+# Build & chạy Docker trên EC2
+docker build -t quizlab:latest .
+docker run -d \
+  --name quizlab \
+  --restart unless-stopped \
+  -p 3000:3000 \
+  --env-file /etc/quizlab/env \
+  quizlab:latest
+```
+
+---
+
 ## 5. Dọn tài nguyên (Cleanup)
 
-Sau khi hoàn thành buổi seminar và lưu xong mã nguồn, video và biên bản nghiệm thu, xóa tài nguyên lab gắn tag `Project=quiz-service-seminar` theo thứ tự:
-1. Xóa ALB, listener và các target group (`tg-main`, `tg-a`, `tg-b`).
-2. Xóa ElastiCache cluster, subnet group, user group và RBAC user tạo riêng cho lab.
-3. Terminate 2 EC2 A/B; kiểm tra xóa EBS volume, snapshot hoặc IP tĩnh còn sót.
-4. Xóa Security Groups, subnet, route/Internet Gateway và VPC riêng của lab (không xóa tài nguyên dùng chung).
+Sau khi quay xong 2 video dự phòng và hoàn thành buổi seminar, **bắt buộc** chạy cleanup để dừng toàn bộ chi phí AWS:
 
-- **Người phụ trách dọn:** `<OWNER_NAME>`
-- **Thời điểm dự kiến dọn:** `<CLEANUP_DATE>`
-- **Chi tiết nhật ký & resource IDs:** Theo dõi tại [DEMO_WORKLOG.md](../../docs/DEMO_WORKLOG.md).
+```bash
+./cleanup-aws.sh --yes
+```
+
+- **Người phụ trách dọn:** `khoa-cli` / người phụ trách demo
+- **Thời điểm dự kiến dọn:** Ngay sau khi hoàn tất quay video & buổi seminar
+- **Chi tiết nhật ký & resource IDs:** Theo dõi tại [DEMO_WORKLOG.md](../../docs/DEMO_WORKLOG.md) và [AWS_CONFIG_COST_CLEANUP.md](../../docs/AWS_CONFIG_COST_CLEANUP.md).
