@@ -12,6 +12,7 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ### Tài liệu tham chiếu chính
 - Đặc tả & tiêu chí bàn giao: [ALB_ElastiCache_Demo_Handover.md](file:///home/khoa/projects/live-quiz/docs/ALB_ElastiCache_Demo_Handover.md)
+- Checklist công việc trọn phần demo: [DEMO_TASKS.md](file:///home/khoa/projects/live-quiz/docs/DEMO_TASKS.md)
 - Kịch bản 20 phút & timeline từng demo (3 phút/demo): [ALB_ElastiCache_Noi_dung_chi_tiet.md](file:///home/khoa/projects/live-quiz/docs/ALB_ElastiCache_Noi_dung_chi_tiet.md)
 - Kiến thức nền tảng & Q&A: [ALB_ElastiCache_Kien_thuc_theo_slide.md](file:///home/khoa/projects/live-quiz/docs/ALB_ElastiCache_Kien_thuc_theo_slide.md)
 
@@ -99,3 +100,33 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ### 6. Đối chiếu tiêu chí nghiệm thu
 - Bước chuẩn bị quy trình & tài liệu nền; chưa tác động trực tiếp đến 10 tiêu chí chạy thật trong bảng nghiệm thu.
+
+## Entry #2 — 2026-11-25 15:34 — Tạo danh sách công việc cho người phụ trách trọn phần Demo (`docs/DEMO_TASKS.md`)
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Tài liệu & Kế hoạch triển khai.
+- **Mục tiêu:** Tổng hợp danh sách công việc chi tiết dạng checklist cho người phụ trách trọn phần demo (không làm slide), bám sát hoàn toàn 3 tài liệu gốc trong `docs/` và không thêm yêu cầu ngoài phạm vi.
+- **File tạo/chỉnh sửa:**
+  - Tạo mới: `docs/DEMO_TASKS.md`
+  - Cập nhật: `docs/DEMO_WORKLOG.md` (bổ sung link tham chiếu tới `docs/DEMO_TASKS.md` và ghi Entry #2)
+
+### 2. Các thao tác đã thực hiện
+1. Đối chiếu trực tiếp các mục 1–12 của `docs/ALB_ElastiCache_Demo_Handover.md` cùng phần chuẩn bị demo ở Slide 5, Slide 9 và Slide 12 trong `docs/ALB_ElastiCache_Noi_dung_chi_tiet.md`.
+2. Tách rõ ranh giới giữa phần việc của người làm demo (hạ tầng AWS, ứng dụng lab, kiểm thử, video dự phòng, tài liệu cấu hình/README/biên bản/chi phí, cleanup) và phần người làm slide (14 slide lý thuyết, bài nói 20 phút, Q&A).
+3. Viết `docs/DEMO_TASKS.md` gồm: Ranh giới nhiệm vụ, Lộ trình 2 ngày, Checklist chi tiết Phần A–D (Hạ tầng AWS, Ứng dụng & Docker, Chạy thử & Video, Tài liệu & Cleanup), Phần mở rộng có điều kiện (chỉ làm khi lõi đã đạt) và Danh sách việc không làm.
+4. Cập nhật mục tham chiếu và thêm Entry #2 vào `docs/DEMO_WORKLOG.md` theo đúng quy tắc trong `AGENTS.md`.
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS`
+- **Kết quả:** Đã tạo `docs/DEMO_TASKS.md` bám sát 100% tài liệu giao việc và kịch bản demo, không bổ sung công cụ hay yêu cầu thừa ngoài docs.
+
+### 4. Cách tự thực hiện lại / Sử dụng
+- Mở `docs/DEMO_TASKS.md` và đánh dấu lần lượt từng checkbox từ Ngày 1 đến Ngày 2 (ưu tiên làm xong Phần A + Phần B cho Demo ALB trước, sau đó đến ElastiCache, kiểm thử 3 lần, quay video, nghiệm thu và cleanup).
+- Sau mỗi đầu việc hoàn thành, ghi bổ sung Entry mới vào `docs/DEMO_WORKLOG.md`.
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Tài liệu `docs/DEMO_TASKS.md` chỉ là checklist công việc; mọi thông số chi tiết khi làm xong phải được cập nhật bằng giá trị quan sát thật (resource IDs, thời gian phát hiện `unhealthy`, chi phí thực tế theo bảng giá AWS hiện hành).
+- Phần mở rộng ở Mục 3 trong `docs/DEMO_TASKS.md` là tùy chọn theo Mục 9 của Handover, không phải điều kiện nghiệm thu bắt buộc.
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Phục vụ quản lý và kiểm tra đầy đủ 10 tiêu chí ở Mục 12 của `docs/ALB_ElastiCache_Demo_Handover.md`; hiện tại cả 10 tiêu chí vẫn ở trạng thái `Chưa chạy`.
