@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seminar Lab — AWS ALB &amp; ElastiCache</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --border: #d8dee6;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #1d4ed8;
+      --primary-hover: #1e40af;
+      --a-bg: #dbeafe;
+      --a-fg: #1e40af;
+      --b-bg: #dcfce7;
+      --b-fg: #166534;
+      --err-bg: #fee2e2;
+      --err-fg: #991b1b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .container {
+      max-width: 1020px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 6px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0 0 18px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      padding: 10px 18px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .panel {
+      display: none;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .panel.active { display: block; }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    input, select {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff;
+    }
+    button.action {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      color: var(--text);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button.action.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    button.action.primary:hover { background: var(--primary-hover); }
+    button.action:hover:not(.primary) { background: #eef2f7; }
+    button.action:disabled { opacity: 0.55; cursor: not-allowed; }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .stat-box {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      min-width: 120px;
+    }
+    .stat-label { font-size: 12px; color: var(--muted); }
+    .stat-val { font-size: 20px; font-weight: 700; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-A { background: var(--a-bg); color: var(--a-fg); }
+    .badge-B { background: var(--b-bg); color: var(--b-fg); }
+    .badge-ERR { background: var(--err-bg); color: var(--err-fg); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th { background: #f3f4f6; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 12px;
+    }
+    @media (max-width: 760px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    .card-sub {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fcfcfd;
+    }
+    .card-sub h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status-line {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+    .error-banner {
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--err-bg);
+      color: var(--err-fg);
+      border: 1px solid #fecaca;
+      font-size: 13px;
+      margin: 10px 0;
+      display: none;
+      white-space: pre-wrap;
+    }
+    .log-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: #111827;
+      color: #e5e7eb;
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      max-height: 170px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Seminar Lab: AWS ALB &amp; ElastiCache (Valkey)</h1>
+    <p class="subtitle">
+      Host hiện tại: <code id="originText"></code> — Mọi API dùng <code>Cache-Control: no-store</code> và hiển thị lỗi thật.
+    </p>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="alb">ALB</button>
+      <button class="tab-btn" data-tab="leaderboard">Shared leaderboard</button>
+    </div>
+
+    <!-- TAB 1: ALB -->
+    <section id="tab-alb" class="panel active">
+      <div class="controls">
+        <button id="btnSend20" class="action primary">Gửi 20 request (/api/whoami)</button>
+        <button id="btnSend1" class="action">Gửi 1 request</button>
+        <button id="btnClearAlb" class="action">Xóa bảng kết quả</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-label">Tổng request</div>
+          <div class="stat-val" id="statTotal">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Backend A</div>
+          <div class="stat-val" id="statA">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Backend B</div>
+          <div class="stat-val" id="statB">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Lỗi (5xx / network)</div>
+          <div class="stat-val" id="statErr">0</div>
+        </div>
+      </div>
+
+      <div id="albErrorBanner" class="error-banner"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>HTTP Status</th>
+            <th>backendId</th>
+            <th>requestId</th>
+            <th>timestamp</th>
+          </tr>
+        </thead>
+        <tbody id="albTableBody">
+          <tr><td colspan="5" style="color: var(--muted);">Chưa gửi request nào.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- TAB 2: SHARED LEADERBOARD -->
+    <section id="tab-leaderboard" class="panel">
+      <div class="controls">
+        <label>
+          Room ID:
+          <input id="roomIdInput" type="text" value="demo" style="width: 130px;">
+        </label>
+        <label>
+          Store:
+          <select id="storeSelect">
+            <option value="memory">memory (RAM riêng từng backend)</option>
+            <option value="elasticache">elasticache (Valkey dùng chung)</option>
+          </select>
+        </label>
+        <button id="btnCacheStatus" class="action">Kiểm tra Cache Status (A &amp; B)</button>
+        <button id="btnResetRoom" class="action">Reset phòng (store đang chọn)</button>
+      </div>
+
+      <div class="controls">
+        <button id="btnWriteAlice100" class="action">Ghi Alice = 100 qua A</button>
+        <button id="btnSeed3" class="action primary">Seed 3 người chơi qua A (Alice 100, Bob 150, Chi 120)</button>
+        <button id="btnAlice170" class="action primary">Update Alice = 170 qua A</button>
+      </div>
+
+      <div class="controls">
+        <label>
+          Player:
+          <input id="playerIdInput" type="text" value="alice" style="width: 110px;">
+        </label>
+        <label>
+          Score:
+          <input id="scoreInput" type="number" value="100" min="0" style="width: 90px;">
+        </label>
+        <button id="btnPutCustom" class="action">Ghi điểm tùy chọn qua A</button>
+        <button id="btnReadA" class="action">Đọc từ A (/lab/a/...)</button>
+        <button id="btnReadB" class="action">Đọc từ B (/lab/b/...)</button>
+      </div>
+
+      <div id="lbErrorBanner" class="error-banner"></div>
+
+      <div class="grid-2">
+        <div class="card-sub">
+          <h3>
+            <span>Kết quả từ Backend A (<code>/lab/a</code>)</span>
+            <span id="badgeReadA"></span>
+          </h3>
+          <div class="status-line" id="metaReadA">Chưa đọc dữ liệu từ A.</div>
+          <table>
+            <thead>
+              <tr><th>Hạng</th><th>playerId</th><th>score</th></tr>
+            </thead>
+            <tbody id="tbodyA">
+              <tr><td colspan="3" style="color: var(--muted);">Chưa có dữ liệu.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card-sub">
+          <h3>
+            <span>Kết quả từ Backend B (<code>/lab/b</code>)</span>
+            <span id="badgeReadB"></span>
+          </h3>
+          <div class="status-line" id="metaReadB">Chưa đọc dữ liệu từ B.</div>
+          <table>
+            <thead>
+              <tr><th>Hạng</th><th>playerId</th><th>score</th></tr>
+            </thead>
+            <tbody id="tbodyB">
+              <tr><td colspan="3" style="color: var(--muted);">Chưa có dữ liệu.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="lbLog" class="log-box">Sẵn sàng thao tác.</div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      document.getElementById('originText').textContent = window.location.origin;
+
+      function escapeHtml(str) {
+        return String(str)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#39;');
+      }
+
+      // Tab switching
+      document.querySelectorAll('.tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
+          document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+          btn.classList.add('active');
+          document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+      });
+
+      function withNoStoreUrl(urlPath) {
+        const sep = urlPath.includes('?') ? '&' : '?';
+        return urlPath + sep + '_t=' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+      }
+
+      async function apiFetch(urlPath, options = {}) {
+        const res = await fetch(withNoStoreUrl(urlPath), {
+          ...options,
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-store',
+            ...(options.headers || {}),
+          },
+        });
+        let data = null;
+        const text = await res.text();
+        try {
+          data = text ? JSON.parse(text) : null;
+        } catch {
+          data = { rawText: text };
+        }
+        return { ok: res.ok, status: res.status, data };
+      }
+
+      // --- ALB TAB ---
+      const albTableBody = document.getElementById('albTableBody');
+      const albErrorBanner = document.getElementById('albErrorBanner');
+      let albRows = [];
+
+      function renderAlb() {
+        let countA = 0;
+        let countB = 0;
+        let countErr = 0;
+        albRows.forEach((r) => {
+          if (!r.ok) countErr += 1;
+          else if (r.backendId === 'A') countA += 1;
+          else if (r.backendId === 'B') countB += 1;
+        });
+
+        document.getElementById('statTotal').textContent = String(albRows.length);
+        document.getElementById('statA').textContent = String(countA);
+        document.getElementById('statB').textContent = String(countB);
+        document.getElementById('statErr').textContent = String(countErr);
+
+        if (albRows.length === 0) {
+          albTableBody.innerHTML = '<tr><td colspan="5" style="color: var(--muted);">Chưa gửi request nào.</td></tr>';
+          return;
+        }
+
+        albTableBody.innerHTML = albRows
+          .map((r, idx) => {
+            const badgeClass = !r.ok ? 'badge-ERR' : (r.backendId === 'A' ? 'badge-A' : 'badge-B');
+            const backendLabel = escapeHtml(r.backendId || 'ERROR');
+            const detail = r.ok ? escapeHtml(r.requestId) : escapeHtml(r.error || 'Request failed');
+            return `<tr>
+              <td>${idx + 1}</td>
+              <td>${r.status}</td>
+              <td><span class="badge ${badgeClass}">${backendLabel}</span></td>
+              <td><code>${detail}</code></td>
+              <td>${escapeHtml(r.timestamp)}</td>
+            </tr>`;
+          })
+          .join('');
+      }
+
+      async function sendWhoamiBatch(count, resetBefore = false) {
+        const btn20 = document.getElementById('btnSend20');
+        const btn1 = document.getElementById('btnSend1');
+        btn20.disabled = true;
+        btn1.disabled = true;
+        albErrorBanner.style.display = 'none';
+        albErrorBanner.textContent = '';
+        if (resetBefore) {
+          albRows = [];
+          renderAlb();
+        }
+
+        try {
+          for (let i = 0; i < count; i += 1) {
+            try {
+              const res = await apiFetch('/api/whoami');
+              if (res.ok && res.data && res.data.backendId) {
+                albRows.push({
+                  ok: true,
+                  status: res.status,
+                  backendId: res.data.backendId,
+                  requestId: res.data.requestId,
+                  timestamp: res.data.timestamp,
+                });
+              } else {
+                const errMsg = (res.data && (res.data.error || res.data.rawText)) || ('HTTP ' + res.status);
+                albRows.push({
+                  ok: false,
+                  status: res.status,
+                  backendId: (res.data && res.data.backendId) || 'ERR',
+                  error: errMsg,
+                  timestamp: new Date().toISOString(),
+                });
+              }
+            } catch (err) {
+              albRows.push({
+                ok: false,
+                status: 0,
+                backendId: 'ERR',
+                error: err && err.message ? err.message : 'Network error',
+                timestamp: new Date().toISOString(),
+              });
+            }
+            renderAlb();
+          }
+        } finally {
+          btn20.disabled = false;
+          btn1.disabled = false;
+        }
+      }
+
+      document.getElementById('btnSend20').addEventListener('click', () => sendWhoamiBatch(20, true));
+      document.getElementById('btnSend1').addEventListener('click', () => sendWhoamiBatch(1, false));
+      document.getElementById('btnClearAlb').addEventListener('click', () => {
+        albRows = [];
+        albErrorBanner.style.display = 'none';
+        renderAlb();
+      });
+
+      // --- LEADERBOARD TAB ---
+      const lbErrorBanner = document.getElementById('lbErrorBanner');
+      const lbLog = document.getElementById('lbLog');
+
+      function appendLog(msg) {
+        const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        lbLog.textContent = line + '\n' + lbLog.textContent;
+      }
+
+      function showLbError(msg) {
+        lbErrorBanner.textContent = msg;
+        lbErrorBanner.style.display = 'block';
+      }
+
+      function clearLbError() {
+        lbErrorBanner.textContent = '';
+        lbErrorBanner.style.display = 'none';
+      }
+
+      function getRoomAndStore() {
+        const roomId = document.getElementById('roomIdInput').value.trim() || 'demo';
+        const store = document.getElementById('storeSelect').value;
+        return { roomId, store };
+      }
+
+      function renderPanel(target, res) {
+        const badgeEl = document.getElementById('badgeRead' + target);
+        const metaEl = document.getElementById('metaRead' + target);
+        const tbodyEl = document.getElementById('tbody' + target);
+
+        if (!res.ok) {
+          const errText = (res.data && (res.data.error || res.data.rawText)) || ('HTTP ' + res.status);
+          badgeEl.innerHTML = `<span class="badge badge-ERR">HTTP ${res.status}</span>`;
+          metaEl.textContent = `Lỗi thật từ backend ${target}: ${errText}`;
+          tbodyEl.innerHTML = `<tr><td colspan="3" style="color: var(--err-fg);">${escapeHtml(errText)}</td></tr>`;
+          return;
+        }
+
+        const data = res.data || {};
+        const bid = data.backendId || '?';
+        const badgeClass = bid === 'A' ? 'badge-A' : (bid === 'B' ? 'badge-B' : '');
+        badgeEl.innerHTML = `<span class="badge ${badgeClass}">backendId: ${escapeHtml(bid)}</span>`;
+        metaEl.textContent = `storeMode=${data.storeMode} | roomId=${data.roomId} | count=${(data.leaderboard || []).length}`;
+
+        const rows = data.leaderboard || [];
+        if (rows.length === 0) {
+          tbodyEl.innerHTML = '<tr><td colspan="3" style="color: var(--muted);">(Trống)</td></tr>';
+          return;
+        }
+        tbodyEl.innerHTML = rows
+          .map((item, idx) => `<tr><td>${idx + 1}</td><td>${escapeHtml(item.playerId)}</td><td>${item.score}</td></tr>`)
+          .join('');
+      }
+
+      async function putScoreViaA(roomId, playerId, score, store) {
+        const reqPath = `/lab/a/api/rooms/${encodeURIComponent(roomId)}/scores/${encodeURIComponent(playerId)}?store=${encodeURIComponent(store)}`;
+        const res = await apiFetch(reqPath, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ score }),
+        });
+        if (!res.ok) {
+          const errMsg = (res.data && (res.data.error || res.data.rawText)) || ('HTTP ' + res.status);
+          showLbError(`PUT /lab/a (${playerId}=${score}, store=${store}) lỗi HTTP ${res.status}: ${errMsg}`);
+          appendLog(`FAIL PUT A ${playerId}=${score} (${store}) -> HTTP ${res.status}: ${errMsg}`);
+          return null;
+        }
+        appendLog(`OK PUT via backendId=${res.data.backendId} (${res.data.storeMode}): ${playerId}=${score}`);
+        return res;
+      }
+
+      async function readFrom(target) {
+        clearLbError();
+        const { roomId, store } = getRoomAndStore();
+        const prefix = target === 'A' ? '/lab/a' : '/lab/b';
+        const reqPath = `${prefix}/api/rooms/${encodeURIComponent(roomId)}/leaderboard?store=${encodeURIComponent(store)}`;
+        try {
+          const res = await apiFetch(reqPath);
+          renderPanel(target, res);
+          if (!res.ok) {
+            const errMsg = (res.data && (res.data.error || res.data.rawText)) || ('HTTP ' + res.status);
+            showLbError(`Đọc từ ${target} lỗi HTTP ${res.status}: ${errMsg}`);
+            appendLog(`FAIL GET ${target} (${store}) -> HTTP ${res.status}: ${errMsg}`);
+          } else {
+            appendLog(`OK GET via backendId=${res.data.backendId} (${res.data.storeMode}): ${res.data.leaderboard.length} rows`);
+          }
+        } catch (err) {
+          const errMsg = err && err.message ? err.message : 'Network error';
+          renderPanel(target, { ok: false, status: 0, data: { error: errMsg } });
+          showLbError(`Đọc từ ${target} lỗi mạng: ${errMsg}`);
+          appendLog(`FAIL GET ${target} (${store}) -> ${errMsg}`);
+        }
+      }
+
+      document.getElementById('btnReadA').addEventListener('click', () => readFrom('A'));
+      document.getElementById('btnReadB').addEventListener('click', () => readFrom('B'));
+
+      document.getElementById('btnWriteAlice100').addEventListener('click', async () => {
+        clearLbError();
+        const { roomId, store } = getRoomAndStore();
+        const res = await putScoreViaA(roomId, 'alice', 100, store);
+        if (res) renderPanel('A', res);
+      });
+
+      document.getElementById('btnSeed3').addEventListener('click', async () => {
+        clearLbError();
+        const { roomId, store } = getRoomAndStore();
+        let lastRes = null;
+        for (const [player, score] of [['alice', 100], ['bob', 150], ['chi', 120]]) {
+          const res = await putScoreViaA(roomId, player, score, store);
+          if (!res) return;
+          lastRes = res;
+        }
+        if (lastRes) renderPanel('A', lastRes);
+      });
+
+      document.getElementById('btnAlice170').addEventListener('click', async () => {
+        clearLbError();
+        const { roomId, store } = getRoomAndStore();
+        const res = await putScoreViaA(roomId, 'alice', 170, store);
+        if (res) renderPanel('A', res);
+      });
+
+      document.getElementById('btnPutCustom').addEventListener('click', async () => {
+        clearLbError();
+        const { roomId, store } = getRoomAndStore();
+        const playerId = document.getElementById('playerIdInput').value.trim();
+        const rawScore = document.getElementById('scoreInput').value.trim();
+        const score = rawScore === '' ? Number.NaN : Number(rawScore);
+        const res = await putScoreViaA(roomId, playerId, score, store);
+        if (res) renderPanel('A', res);
+      });
+
+      document.getElementById('btnCacheStatus').addEventListener('click', async () => {
+        clearLbError();
+        for (const [label, prefix] of [['A', '/lab/a'], ['B', '/lab/b']]) {
+          try {
+            const res = await apiFetch(`${prefix}/api/cache-status`);
+            appendLog(`cache-status ${label}: HTTP ${res.status} ${JSON.stringify(res.data)}`);
+            if (!res.ok) {
+              showLbError(`Cache status ${label} (HTTP ${res.status}): ${(res.data && res.data.error) || 'error'}`);
+            }
+          } catch (err) {
+            appendLog(`cache-status ${label}: network error ${err.message}`);
+            showLbError(`Cache status ${label}: ${err.message}`);
+          }
+        }
+      });
+
+      document.getElementById('btnResetRoom').addEventListener('click', async () => {
+        clearLbError();
+        const { roomId, store } = getRoomAndStore();
+        const targets = store === 'memory' ? ['/lab/a', '/lab/b'] : ['/lab/a'];
+        for (const prefix of targets) {
+          try {
+            const res = await apiFetch(
+              `${prefix}/api/lab/rooms/${encodeURIComponent(roomId)}?store=${encodeURIComponent(store)}`,
+              { method: 'DELETE' }
+            );
+            appendLog(`RESET ${prefix} (${store}): HTTP ${res.status} ${JSON.stringify(res.data)}`);
+            if (!res.ok) {
+              showLbError(`Reset ${prefix} lỗi HTTP ${res.status}: ${(res.data && res.data.error) || 'error'}`);
+            }
+          } catch (err) {
+            appendLog(`RESET ${prefix} (${store}): ${err.message}`);
+            showLbError(`Reset ${prefix} lỗi mạng: ${err.message}`);
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

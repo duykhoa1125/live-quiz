@@ -130,3 +130,77 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ### 6. Đối chiếu tiêu chí nghiệm thu
 - Phục vụ quản lý và kiểm tra đầy đủ 10 tiêu chí ở Mục 12 của `docs/ALB_ElastiCache_Demo_Handover.md`; hiện tại cả 10 tiêu chí vẫn ở trạng thái `Chưa chạy`.
+
+## Entry #3 — 2026-11-25 15:47 — Cài AWS CLI v2 và xây dựng mã nguồn ứng dụng Lab (`seminar-lab/alb-elasticache/`)
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Hạ tầng (công cụ CLI) & Ứng dụng & Cache.
+- **Mục tiêu:** Cài AWS CLI v2 lên máy làm việc và tạo trọn bộ mã nguồn ứng dụng lab (Node.js 24 + Docker + UI 2 tab) bám sát hợp đồng Mục 5 trong `docs/ALB_ElastiCache_Demo_Handover.md`.
+- **Công cụ & File đã tạo/chỉnh sửa:**
+  - Cài đặt công cụ: `/home/khoa/.local/bin/aws` (`aws-cli/2.42.3`, cài tại `/home/khoa/.local/aws-cli`).
+  - Mã nguồn mới trong `seminar-lab/alb-elasticache/`:
+    - `seminar-lab/alb-elasticache/package.json`
+    - `seminar-lab/alb-elasticache/Dockerfile`
+    - `seminar-lab/alb-elasticache/.dockerignore`
+    - `seminar-lab/alb-elasticache/.env.example`
+    - `seminar-lab/alb-elasticache/src/server.js`
+    - `seminar-lab/alb-elasticache/public/index.html`
+    - `seminar-lab/alb-elasticache/README.md`
+
+### 2. Các thao tác đã thực hiện
+1. Kiểm tra công cụ sẵn có trên máy (`aws`, `node`, `npm`, `docker`, `terraform`, `~/.aws`) — xác nhận đều chưa có và chưa cấu hình credentials AWS.
+2. Tải gói cài đặt chính thức `https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip` về `/tmp/awscliv2.zip`.
+3. Giải nén bằng Python (giữ nguyên Unix permission và symlink) sang `/tmp/awscli-extract`, cài đặt vào `/home/khoa/.local/aws-cli` và tạo symlink thực thi tại `/home/khoa/.local/bin/aws`. Xóa các file tạm ở `/tmp/`.
+4. Xây dựng `seminar-lab/alb-elasticache/src/server.js` bằng Node.js `http` + `ioredis` với các hành vi:
+   - Tự strip prefix `/lab/a` và `/lab/b` trước khi khớp route.
+   - Mọi API trả JSON và `Cache-Control: no-store`.
+   - `/health` độc lập hoàn toàn với ElastiCache; `/api/cache-status` kiểm tra `PING` qua TLS/RBAC và ẩn thông tin nhạy cảm.
+   - `store=memory` dùng `Map` trong tiến trình; `store=elasticache` dùng 1 client `ioredis` tái sử dụng (`enableReadyCheck: false`, `enableOfflineQueue: false`, `ZADD`, `EXPIRE 3600`, `ZRANGE ... REV WITHSCORES`, `DEL`), trả HTTP `503` khi lỗi và không fallback ngầm về RAM.
+   - Xử lý `SIGTERM`/`SIGINT` đóng server nhanh để `docker stop quizlab` dừng tức thì khi demo.
+5. Xây dựng `public/index.html` với 2 tab `ALB` (gửi 20 request `/api/whoami`, đếm A/B/lỗi) và `Shared leaderboard` (chọn `roomId`, `store`, ghi qua `/lab/a`, đọc `/lab/a` & `/lab/b`, seed 3 người chơi, update Alice 170, reset phòng, kiểm tra `cache-status`, hiển thị lỗi thật).
+6. Tạo `Dockerfile` (`node:24-alpine`), `.dockerignore`, `.env.example` và `README.md`.
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PARTIAL` (Đã cài AWS CLI và tạo xong mã nguồn lab; chưa có AWS credentials để thao tác lên AWS thật, chưa có `node`/`docker` tại máy local để chạy thử container tại chỗ).
+- **Output thực tế:** `/home/khoa/.local/bin/aws --version` trả về `aws-cli/2.42.3 Python/3.14.10 Linux/6.6.87.2-microsoft-standard-WSL2 exe/x86_64.ubuntu.24`.
+- **Lỗi/Vướng mắc hiện tại:**
+  - Chưa có credentials AWS trong `~/.aws` hoặc biến môi trường `AWS_*`, nên chưa thể chạy `aws sts get-caller-identity` và chưa thể tạo tài nguyên AWS.
+
+### 4. Cách tự thực hiện lại / Bước tiếp theo
+- Để chạy `aws` trực tiếp không cần gõ đường dẫn đầy đủ, đảm bảo `~/.local/bin` nằm trong `PATH` (`export PATH="$HOME/.local/bin:$PATH"`).
+- Cấu hình tài khoản AWS (`aws configure` hoặc `aws configure sso`) bằng credentials được cấp, sau đó kiểm tra quyền bằng `aws sts get-caller-identity` trước khi tạo hạ tầng trong `ap-southeast-1`.
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Code đã viết đúng đặc tả Mục 5 Handover nhưng **chưa chạy thử trực tiếp trên Node 24/Docker local** do máy hiện chưa cài `node` và `docker`; cần test ngay sau khi cài/build trên EC2 (hoặc máy có Docker/Node).
+- Chưa dựng bất kỳ tài nguyên AWS nào ở bước này nên chưa phát sinh chi phí AWS.
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Chuẩn bị mã nguồn phục vụ các tiêu chí 2–8 của Mục 12 Handover; toàn bộ 10 tiêu chí vẫn ở trạng thái `Chưa chạy`.
+
+## Entry #4 — 2026-11-25 15:50 — Khôi phục và kiểm tra lại `public/index.html`
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Ứng dụng & Cache.
+- **Mục tiêu:** Kiểm tra nguyên nhân và khôi phục file `seminar-lab/alb-elasticache/public/index.html` sau khi file bị rỗng (`0` byte lúc `15:49:01`), đồng thời kiểm tra khớp ID phần tử HTML/JS và cấu trúc với `src/server.js`.
+- **File chỉnh sửa:** `seminar-lab/alb-elasticache/public/index.html`
+
+### 2. Các thao tác đã thực hiện
+1. Kiểm tra kích thước và timestamp file bằng `ls -la --full-time`, phát hiện `public/index.html` có kích thước `0` byte tại mốc `2026-11-25 15:49:01` (trong khi trước đó ở `15:47` là `22,866` byte — khả năng do lưu đè từ trình soạn thảo khi file đang mở lúc sửa).
+2. Kiểm tra lại toàn bộ `src/server.js` (534 dòng) để đối chiếu route, method, query parameter và format JSON trả về.
+3. Ghi khôi phục đầy đủ nội dung `seminar-lab/alb-elasticache/public/index.html`, bổ sung dọn lỗi nhỏ khi ô `Score` để trống (`rawScore === '' ? Number.NaN : Number(rawScore)`) và đưa `escapeHtml` lên đầu IIFE.
+4. Chạy script Python kiểm tra cân bằng thẻ HTML, đối chiếu toàn bộ `getElementById` trong `<script>` với các `id` khai báo trong HTML, và kiểm tra JSON của `package.json`.
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS` (Kiểm tra cấu trúc tĩnh đạt; vẫn chưa chạy runtime do máy chưa cài `node`/`docker`).
+- **Kết quả kiểm tra:**
+  - `public/index.html`: đã khôi phục đầy đủ (không còn 0 byte), thẻ HTML đóng mở cân bằng (`HTML stack remaining: []`, `HTML errors: []`), không thiếu element ID (`Missing element IDs: []`).
+  - `src/server.js`: còn nguyên vẹn 534 dòng (`14,461` byte).
+
+### 4. Cách tự thực hiện lại / Kiểm tra
+- Khi build/chạy bằng Docker hoặc Node.js 24, mở `http://localhost:3000/` (hoặc `http://<ALB_DNS>/`) để kiểm tra 2 tab `ALB` và `Shared leaderboard`.
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Nếu trình soạn thảo đang mở sẵn file khi công cụ sửa file, cần reload file (hoặc không bấm `Ctrl+S` trên tab cũ chưa đồng bộ) để tránh ghi đè mất nội dung.
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Khôi phục giao diện UI phục vụ các tiêu chí 2–8 của Mục 12 Handover; 10 tiêu chí vẫn ở trạng thái `Chưa chạy`.
