@@ -266,3 +266,69 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ### 6. Đối chiếu tiêu chí nghiệm thu
 - Cập nhật bảng nghiệm thu: Tiêu chí `1` đến `8` chuyển sang **Đạt**; Tiêu chí `9` (2 video ≤ 3 phút) ở trạng thái `Chờ quay`; Tiêu chí `10` (Cleanup & chi phí) đã có ước tính & script cleanup, chờ chạy dọn sau khi quay video & thuyết trình.
+
+## Entry #6 — 2026-11-25 16:41 — Thiết kế lại giao diện `public/index.html` theo phong cách Neo-Brutalism và redeploy lên AWS
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Ứng dụng & Cache.
+- **Mục tiêu:** Thiết kế lại giao diện web của ứng dụng lab theo phong cách **Neo-Brutalism** dựa trên bảng màu tham chiếu của người dùng (`#FE90E8`, `#C0F7FE`, `#99E885`, `#F7CB46`, `#FFDC8B`, `#000000`, nền kem lưới chấm `#FAF6E8`), đồng thời build/deploy lại lên cả EC2 A và EC2 B.
+- **File chỉnh sửa:** `seminar-lab/alb-elasticache/public/index.html`
+
+### 2. Các thao tác đã thực hiện
+1. Thiết kế lại toàn bộ CSS và cấu trúc khung trình bày trong `seminar-lab/alb-elasticache/public/index.html` (giữ nguyên 1 file HTML/JS thuần, không thêm bước build hay CDN ngoài):
+   - Nền kem `#FAF6E8` kèm lưới chấm đen, khung tiêu đề kiểu Figma frame có 4 ô vuông ở 4 góc và các pill tag `CONCEPT // AWS REAL LAB`, `CACHE-CONTROL: NO-STORE`.
+   - Viền đen đậm (`3px` / `2px solid #000000`), đổ bóng cứng không mờ (`5px 5px 0 #000` / `3px 3px 0 #000`) và hiệu ứng nhấn nút.
+   - Phân màu rõ ràng cho 2 backend khi trình diễn: Backend A (`#C0F7FE` xanh cyan), Backend B (`#99E885` xanh lá), nút hành động chính (`#F7CB46` vàng), thông số tổng (`#FFDC8B`), và lỗi thật (`#FE90E8` hồng).
+   - Giữ nguyên toàn bộ element IDs, logic `apiFetch` với `Cache-Control: no-store` + cache buster `_t=...`, 2 tab `01 // ALB Routing & Health` và `02 // Shared Leaderboard`, không thêm nút public tắt tiến trình và không fallback ngầm.
+2. Chạy kiểm tra tĩnh HTML (`HTMLParser` kiểm tra cân bằng thẻ + đối chiếu `getElementById`) và kiểm tra cú pháp JS trong `<script>` bằng `vm.Script` của Node.js 24.
+3. Đóng gói lại và deploy lên EC2 A (`i-0cca77524a1964c16`) và EC2 B (`i-0ccf80b64328d1526`) qua `aws ssm send-command` (`docker build` + recreate container `quizlab` dùng nguyên `/etc/quizlab/env`).
+4. Kiểm tra qua ALB thật (`GET /`, `GET /lab/a/`, `GET /lab/b/`, `/lab/a/api/cache-status`, `/lab/b/api/cache-status`).
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS`
+- **Kiểm tra tĩnh & cú pháp:** `HTML errors: []`, `Missing IDs: []`, `JS_SYNTAX_OK`.
+- **Deploy & kiểm tra live qua `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com`:**
+  - `REDEPLOY A STATUS=Success`, `REDEPLOY B STATUS=Success`; `tg-main`, `tg-a`, `tg-b` đều `healthy`.
+  - `GET /`, `GET /lab/a/`, `GET /lab/b/` đều trả `HTTP 200` (`28,864` ký tự, chứa style Neo-Brutalism mới).
+  - `/lab/a/api/cache-status` và `/lab/b/api/cache-status` trả `HTTP 200`, `connected: true`, `tls: true`, `ping: "PONG"`.
+- **Ghi chú kiểm tra trình duyệt:** Không mở tự động bằng subagent trình duyệt được do `chrome_devtools` MCP server chưa kết nối trên môi trường hiện tại; cần bạn mở trực tiếp trên trình duyệt của bạn để xem hiển thị và quay video.
+
+### 4. Cách tự thực hiện lại / Kiểm tra
+- Mở `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com/` trên trình duyệt (bấm `Ctrl+Shift+R` nếu trình duyệt còn giữ tab cũ) để kiểm tra giao diện mới.
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Thay đổi chỉ nằm ở lớp giao diện HTML/CSS trong `public/index.html`, toàn bộ hợp đồng API, prefix stripping, xử lý lỗi `503` và kết nối Valkey TLS/RBAC giữ nguyên như đã nghiệm thu ở `Entry #5`.
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Không làm thay đổi kết quả 8/10 tiêu chí đã `Đạt` ở `Entry #5`; giao diện mới sẵn sàng cho bước quay 2 video dự phòng (tiêu chí 9).
+
+## Entry #7 — 2026-11-25 16:43 — Đổi font giao diện sang Be Vietnam Pro (hỗ trợ đầy đủ tiếng Việt) và redeploy
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Ứng dụng & Cache.
+- **Mục tiêu:** Sửa lỗi hiển thị dấu tiếng Việt trên giao diện Neo-Brutalism bằng cách đổi font chính sang **Be Vietnam Pro** (và **JetBrains Mono** cho khối mã/ID), sau đó build/deploy lại lên EC2 A và EC2 B.
+- **File chỉnh sửa:** `seminar-lab/alb-elasticache/public/index.html`
+
+### 2. Các thao tác đã thực hiện
+1. Kiểm tra URL Google Fonts (`Be Vietnam Pro` weights `500;600;700;800;900` và `JetBrains Mono` weights `500;700`) xác nhận trả về `@font-face` subset `vietnamese`.
+2. Cập nhật `seminar-lab/alb-elasticache/public/index.html`:
+   - Thêm `<link>` nạp Google Fonts `Be Vietnam Pro` và `JetBrains Mono` trong `<head>`.
+   - Thay `Space Grotesk` / `Arial Black` bằng `"Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`.
+   - Thêm `button, input, select { font-family: inherit; }` để nút, ô nhập liệu và select dùng đồng nhất `Be Vietnam Pro`.
+3. Kiểm tra tĩnh HTML và đóng gói deploy lại lên EC2 A (`i-0cca77524a1964c16`) và EC2 B (`i-0ccf80b64328d1526`) qua `aws ssm send-command`, kiểm tra qua ALB.
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS`
+- **Kết quả kiểm tra live qua `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com`:**
+  - `REDEPLOY A STATUS=Success`, `REDEPLOY B STATUS=Success`; cả 3 target group (`tg-main`, `tg-a`, `tg-b`) đều `healthy`.
+  - `GET /`, `GET /lab/a/`, `GET /lab/b/` trả `HTTP 200` (`29,236` ký tự, chứa `Be Vietnam Pro` và `JetBrains Mono`).
+  - `/lab/a/api/cache-status` và `/lab/b/api/cache-status` trả `HTTP 200`, `connected: true`, `ping: "PONG"`.
+
+### 4. Cách tự thực hiện lại / Kiểm tra
+- Mở `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com/` trên trình duyệt (bấm `Ctrl+Shift+R` để tải lại stylesheet mới).
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- `Be Vietnam Pro` và `JetBrains Mono` được tải qua Google Fonts khi máy người trình diễn có Internet; nếu trình duyệt mất mạng tới `fonts.googleapis.com`, CSS vẫn có fallback về font hệ thống sạch không dùng `Arial Black`.
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Không làm thay đổi 8/10 tiêu chí đã `Đạt`; sẵn sàng cho người phụ trách mở trình duyệt kiểm tra và quay 2 video dự phòng (tiêu chí 9).

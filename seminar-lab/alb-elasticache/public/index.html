@@ -3,196 +3,420 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seminar Lab — AWS ALB &amp; ElastiCache</title>
+  <title>Seminar Lab — AWS ALB &amp; ElastiCache (Neo-Brutalism)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f5f7fa;
-      --card: #ffffff;
-      --border: #d8dee6;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --primary: #1d4ed8;
-      --primary-hover: #1e40af;
-      --a-bg: #dbeafe;
-      --a-fg: #1e40af;
-      --b-bg: #dcfce7;
-      --b-fg: #166534;
-      --err-bg: #fee2e2;
-      --err-fg: #991b1b;
+      --cream: #FAF6E8;
+      --white: #FFFFFF;
+      --black: #000000;
+      --pink: #FE90E8;
+      --cyan: #C0F7FE;
+      --green: #99E885;
+      --yellow: #F7CB46;
+      --peach: #FFDC8B;
+      --border: 3px solid #000000;
+      --border-thin: 2px solid #000000;
+      --shadow: 5px 5px 0px #000000;
+      --shadow-sm: 3px 3px 0px #000000;
     }
+
     * { box-sizing: border-box; }
+
+    button, input, select {
+      font-family: inherit;
+    }
+
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      min-height: 100vh;
+      font-family: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--black);
+      background-color: var(--cream);
+      background-image: radial-gradient(rgba(0, 0, 0, 0.28) 1px, transparent 1px);
+      background-size: 16px 16px;
       line-height: 1.45;
+      padding-bottom: 36px;
     }
+
+    code, .mono {
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-weight: 700;
+    }
+
     .container {
-      max-width: 1020px;
+      max-width: 1080px;
       margin: 24px auto;
-      padding: 0 16px;
+      padding: 0 18px;
     }
+
+    /* Hero frame inspired by Neo-Brutalism concept frame */
+    .hero-frame {
+      position: relative;
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 20px 22px 18px;
+      margin-bottom: 20px;
+    }
+
+    .corner-handle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: var(--white);
+      border: var(--border-thin);
+    }
+    .corner-tl { top: -6px; left: -6px; }
+    .corner-tr { top: -6px; right: -6px; }
+    .corner-bl { bottom: -6px; left: -6px; }
+    .corner-br { bottom: -6px; right: -6px; }
+
+    .hero-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .pill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--peach);
+      border: var(--border-thin);
+      box-shadow: 2px 2px 0 #000;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .pill-tag.accent-pink {
+      background: var(--pink);
+    }
+
+    .hero-title-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
     h1 {
-      font-size: 22px;
-      margin: 0 0 6px;
+      margin: 0;
+      font-size: 28px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
     }
+
+    .spark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      background: var(--green);
+      border: var(--border-thin);
+      border-radius: 50%;
+      font-size: 16px;
+      font-weight: 900;
+      box-shadow: 2px 2px 0 #000;
+    }
+
     .subtitle {
-      color: var(--muted);
-      font-size: 14px;
-      margin: 0 0 18px;
+      margin: 10px 0 0;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
     }
+
+    .origin-chip {
+      padding: 3px 9px;
+      background: var(--cyan);
+      border: var(--border-thin);
+      font-size: 12px;
+      word-break: break-all;
+    }
+
+    /* Tabs */
     .tabs {
       display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
     }
+
     .tab-btn {
-      padding: 10px 18px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      border-radius: 8px;
-      font-weight: 600;
+      padding: 11px 22px;
+      border: var(--border);
+      background: var(--white);
+      color: var(--black);
+      font-size: 15px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
       cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.08s ease;
     }
+
+    .tab-btn:hover {
+      background: var(--peach);
+    }
+
     .tab-btn.active {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
+      background: var(--yellow);
+      transform: translate(1px, 1px);
+      box-shadow: 4px 4px 0 #000;
     }
+
+    /* Main Panels */
     .panel {
       display: none;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 18px;
+      background: var(--white);
+      border: var(--border);
+      box-shadow: var(--shadow);
+      padding: 20px;
     }
+
     .panel.active { display: block; }
-    .controls {
+
+    .control-block {
+      background: var(--cream);
+      border: var(--border-thin);
+      padding: 12px 14px;
+      margin-bottom: 14px;
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       align-items: center;
-      margin-bottom: 14px;
     }
+
     label {
       font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
+      font-weight: 800;
+      text-transform: uppercase;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
+
     input, select {
-      padding: 7px 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      padding: 8px 10px;
+      border: var(--border-thin);
+      background: var(--white);
+      color: var(--black);
       font-size: 14px;
-      background: #fff;
+      font-weight: 700;
+      box-shadow: 2px 2px 0 #000;
+      outline: none;
     }
+
+    input:focus, select:focus {
+      background: var(--cyan);
+    }
+
     button.action {
-      padding: 8px 14px;
-      border: 1px solid var(--border);
-      background: #f9fafb;
-      color: var(--text);
-      border-radius: 6px;
+      padding: 9px 15px;
+      border: var(--border-thin);
+      background: var(--white);
+      color: var(--black);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
       cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.07s ease, box-shadow 0.07s ease;
     }
-    button.action.primary {
-      background: var(--primary);
-      border-color: var(--primary);
-      color: #fff;
+
+    button.action:hover:not(:disabled) {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 #000;
     }
-    button.action.primary:hover { background: var(--primary-hover); }
-    button.action:hover:not(.primary) { background: #eef2f7; }
-    button.action:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    button.action:active:not(:disabled) {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 #000;
+    }
+
+    button.action.primary { background: var(--yellow); }
+    button.action.cyan { background: var(--cyan); }
+    button.action.green { background: var(--green); }
+    button.action.pink { background: var(--pink); }
+    button.action.peach { background: var(--peach); }
+
+    button.action:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      box-shadow: 1px 1px 0 #000;
+    }
+
+    /* Stats */
     .stats {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(130px, 1fr));
       gap: 12px;
-      margin-bottom: 14px;
+      margin-bottom: 16px;
     }
+
+    @media (max-width: 720px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+
     .stat-box {
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: #f9fafb;
-      min-width: 120px;
+      padding: 12px 14px;
+      border: var(--border-thin);
+      box-shadow: var(--shadow-sm);
+      background: var(--peach);
     }
-    .stat-label { font-size: 12px; color: var(--muted); }
-    .stat-val { font-size: 20px; font-weight: 700; }
+    .stat-box.stat-a { background: var(--cyan); }
+    .stat-box.stat-b { background: var(--green); }
+    .stat-box.stat-err { background: var(--pink); }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .stat-val {
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-top: 4px;
+    }
+
+    /* Badges */
     .badge {
       display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
+      padding: 3px 10px;
+      border: var(--border-thin);
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 900;
+      text-transform: uppercase;
+      box-shadow: 2px 2px 0 #000;
     }
-    .badge-A { background: var(--a-bg); color: var(--a-fg); }
-    .badge-B { background: var(--b-bg); color: var(--b-fg); }
-    .badge-ERR { background: var(--err-bg); color: var(--err-fg); }
+    .badge-A { background: var(--cyan); color: var(--black); }
+    .badge-B { background: var(--green); color: var(--black); }
+    .badge-ERR { background: var(--pink); color: var(--black); }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      border: var(--border-thin);
+      box-shadow: var(--shadow-sm);
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
+      background: var(--white);
     }
+
     th, td {
-      border: 1px solid var(--border);
-      padding: 8px 10px;
+      border-bottom: var(--border-thin);
+      border-right: var(--border-thin);
+      padding: 9px 11px;
       text-align: left;
     }
-    th { background: #f3f4f6; }
+
+    th:last-child, td:last-child { border-right: none; }
+    tr:last-child td { border-bottom: none; }
+
+    th {
+      background: var(--yellow);
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+    }
+
+    /* Leaderboard Grid */
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 12px;
+      gap: 16px;
+      margin-top: 14px;
     }
-    @media (max-width: 760px) {
+
+    @media (max-width: 780px) {
       .grid-2 { grid-template-columns: 1fr; }
     }
+
     .card-sub {
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 12px;
-      background: #fcfcfd;
+      border: var(--border);
+      box-shadow: var(--shadow);
+      background: var(--white);
+      overflow: hidden;
     }
-    .card-sub h3 {
-      margin: 0 0 8px;
-      font-size: 15px;
+
+    .card-sub-head {
+      padding: 11px 14px;
+      border-bottom: var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 900;
+      text-transform: uppercase;
     }
+
+    .card-sub-head.head-a { background: var(--cyan); }
+    .card-sub-head.head-b { background: var(--green); }
+
+    .card-sub-body {
+      padding: 12px 14px 14px;
+    }
+
     .status-line {
       font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 8px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      padding: 6px 9px;
+      background: var(--cream);
+      border: var(--border-thin);
       word-break: break-word;
     }
+
     .error-banner {
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: var(--err-bg);
-      color: var(--err-fg);
-      border: 1px solid #fecaca;
+      padding: 11px 14px;
+      background: var(--pink);
+      color: var(--black);
+      border: var(--border);
+      box-shadow: var(--shadow-sm);
       font-size: 13px;
-      margin: 10px 0;
+      font-weight: 800;
+      margin: 12px 0;
       display: none;
       white-space: pre-wrap;
     }
+
     .log-box {
-      margin-top: 12px;
-      padding: 10px 12px;
-      background: #111827;
-      color: #e5e7eb;
-      border-radius: 8px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      margin-top: 16px;
+      padding: 12px 14px;
+      background: #111111;
+      color: var(--green);
+      border: var(--border);
+      box-shadow: var(--shadow-sm);
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 12px;
-      max-height: 170px;
+      font-weight: 600;
+      max-height: 190px;
       overflow-y: auto;
       white-space: pre-wrap;
     }
@@ -200,21 +424,40 @@
 </head>
 <body>
   <div class="container">
-    <h1>Seminar Lab: AWS ALB &amp; ElastiCache (Valkey)</h1>
-    <p class="subtitle">
-      Host hiện tại: <code id="originText"></code> — Mọi API dùng <code>Cache-Control: no-store</code> và hiển thị lỗi thật.
-    </p>
+    <header class="hero-frame">
+      <span class="corner-handle corner-tl"></span>
+      <span class="corner-handle corner-tr"></span>
+      <span class="corner-handle corner-bl"></span>
+      <span class="corner-handle corner-br"></span>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="alb">ALB</button>
-      <button class="tab-btn" data-tab="leaderboard">Shared leaderboard</button>
-    </div>
+      <div class="hero-top">
+        <span class="pill-tag">CONCEPT // AWS REAL LAB</span>
+        <span class="pill-tag accent-pink">CACHE-CONTROL: NO-STORE</span>
+      </div>
+
+      <div class="hero-title-row">
+        <span class="spark" aria-hidden="true">✦</span>
+        <h1>Seminar Lab: AWS ALB &amp; ElastiCache</h1>
+      </div>
+
+      <p class="subtitle">
+        <span>Endpoint:</span>
+        <code id="originText" class="origin-chip"></code>
+        <span>•</span>
+        <span>Backend tự strip <code>/lab/a</code> &amp; <code>/lab/b</code> • Không fallback ngầm</span>
+      </p>
+    </header>
+
+    <nav class="tabs" aria-label="Demo tabs">
+      <button class="tab-btn active" data-tab="alb">01 // ALB Routing &amp; Health</button>
+      <button class="tab-btn" data-tab="leaderboard">02 // Shared Leaderboard</button>
+    </nav>
 
     <!-- TAB 1: ALB -->
     <section id="tab-alb" class="panel active">
-      <div class="controls">
+      <div class="control-block">
         <button id="btnSend20" class="action primary">Gửi 20 request (/api/whoami)</button>
-        <button id="btnSend1" class="action">Gửi 1 request</button>
+        <button id="btnSend1" class="action cyan">Gửi 1 request</button>
         <button id="btnClearAlb" class="action">Xóa bảng kết quả</button>
       </div>
 
@@ -223,15 +466,15 @@
           <div class="stat-label">Tổng request</div>
           <div class="stat-val" id="statTotal">0</div>
         </div>
-        <div class="stat-box">
+        <div class="stat-box stat-a">
           <div class="stat-label">Backend A</div>
           <div class="stat-val" id="statA">0</div>
         </div>
-        <div class="stat-box">
+        <div class="stat-box stat-b">
           <div class="stat-label">Backend B</div>
           <div class="stat-val" id="statB">0</div>
         </div>
-        <div class="stat-box">
+        <div class="stat-box stat-err">
           <div class="stat-label">Lỗi (5xx / network)</div>
           <div class="stat-val" id="statErr">0</div>
         </div>
@@ -239,25 +482,27 @@
 
       <div id="albErrorBanner" class="error-banner"></div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>HTTP Status</th>
-            <th>backendId</th>
-            <th>requestId</th>
-            <th>timestamp</th>
-          </tr>
-        </thead>
-        <tbody id="albTableBody">
-          <tr><td colspan="5" style="color: var(--muted);">Chưa gửi request nào.</td></tr>
-        </tbody>
-      </table>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>HTTP Status</th>
+              <th>backendId</th>
+              <th>requestId</th>
+              <th>timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="albTableBody">
+            <tr><td colspan="5">Chưa gửi request nào. Bấm "Gửi 20 request (/api/whoami)" để bắt đầu.</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
     <!-- TAB 2: SHARED LEADERBOARD -->
     <section id="tab-leaderboard" class="panel">
-      <div class="controls">
+      <div class="control-block">
         <label>
           Room ID:
           <input id="roomIdInput" type="text" value="demo" style="width: 130px;">
@@ -269,17 +514,17 @@
             <option value="elasticache">elasticache (Valkey dùng chung)</option>
           </select>
         </label>
-        <button id="btnCacheStatus" class="action">Kiểm tra Cache Status (A &amp; B)</button>
-        <button id="btnResetRoom" class="action">Reset phòng (store đang chọn)</button>
+        <button id="btnCacheStatus" class="action peach">Kiểm tra Cache Status (A &amp; B)</button>
+        <button id="btnResetRoom" class="action pink">Reset phòng (store đang chọn)</button>
       </div>
 
-      <div class="controls">
-        <button id="btnWriteAlice100" class="action">Ghi Alice = 100 qua A</button>
+      <div class="control-block">
+        <button id="btnWriteAlice100" class="action cyan">Ghi Alice = 100 qua A</button>
         <button id="btnSeed3" class="action primary">Seed 3 người chơi qua A (Alice 100, Bob 150, Chi 120)</button>
         <button id="btnAlice170" class="action primary">Update Alice = 170 qua A</button>
       </div>
 
-      <div class="controls">
+      <div class="control-block">
         <label>
           Player:
           <input id="playerIdInput" type="text" value="alice" style="width: 110px;">
@@ -289,43 +534,51 @@
           <input id="scoreInput" type="number" value="100" min="0" style="width: 90px;">
         </label>
         <button id="btnPutCustom" class="action">Ghi điểm tùy chọn qua A</button>
-        <button id="btnReadA" class="action">Đọc từ A (/lab/a/...)</button>
-        <button id="btnReadB" class="action">Đọc từ B (/lab/b/...)</button>
+        <button id="btnReadA" class="action cyan">Đọc từ A (/lab/a/...)</button>
+        <button id="btnReadB" class="action green">Đọc từ B (/lab/b/...)</button>
       </div>
 
       <div id="lbErrorBanner" class="error-banner"></div>
 
       <div class="grid-2">
         <div class="card-sub">
-          <h3>
-            <span>Kết quả từ Backend A (<code>/lab/a</code>)</span>
+          <div class="card-sub-head head-a">
+            <span>Backend A (<code>/lab/a</code>)</span>
             <span id="badgeReadA"></span>
-          </h3>
-          <div class="status-line" id="metaReadA">Chưa đọc dữ liệu từ A.</div>
-          <table>
-            <thead>
-              <tr><th>Hạng</th><th>playerId</th><th>score</th></tr>
-            </thead>
-            <tbody id="tbodyA">
-              <tr><td colspan="3" style="color: var(--muted);">Chưa có dữ liệu.</td></tr>
-            </tbody>
-          </table>
+          </div>
+          <div class="card-sub-body">
+            <div class="status-line" id="metaReadA">Chưa đọc dữ liệu từ A.</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Hạng</th><th>playerId</th><th>score</th></tr>
+                </thead>
+                <tbody id="tbodyA">
+                  <tr><td colspan="3">Chưa có dữ liệu.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <div class="card-sub">
-          <h3>
-            <span>Kết quả từ Backend B (<code>/lab/b</code>)</span>
+          <div class="card-sub-head head-b">
+            <span>Backend B (<code>/lab/b</code>)</span>
             <span id="badgeReadB"></span>
-          </h3>
-          <div class="status-line" id="metaReadB">Chưa đọc dữ liệu từ B.</div>
-          <table>
-            <thead>
-              <tr><th>Hạng</th><th>playerId</th><th>score</th></tr>
-            </thead>
-            <tbody id="tbodyB">
-              <tr><td colspan="3" style="color: var(--muted);">Chưa có dữ liệu.</td></tr>
-            </tbody>
-          </table>
+          </div>
+          <div class="card-sub-body">
+            <div class="status-line" id="metaReadB">Chưa đọc dữ liệu từ B.</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Hạng</th><th>playerId</th><th>score</th></tr>
+                </thead>
+                <tbody id="tbodyB">
+                  <tr><td colspan="3">Chưa có dữ liệu.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -346,7 +599,6 @@
           .replaceAll("'", '&#39;');
       }
 
-      // Tab switching
       document.querySelectorAll('.tab-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'));
@@ -401,7 +653,7 @@
         document.getElementById('statErr').textContent = String(countErr);
 
         if (albRows.length === 0) {
-          albTableBody.innerHTML = '<tr><td colspan="5" style="color: var(--muted);">Chưa gửi request nào.</td></tr>';
+          albTableBody.innerHTML = '<tr><td colspan="5">Chưa gửi request nào. Bấm "Gửi 20 request (/api/whoami)" để bắt đầu.</td></tr>';
           return;
         }
 
@@ -411,11 +663,11 @@
             const backendLabel = escapeHtml(r.backendId || 'ERROR');
             const detail = r.ok ? escapeHtml(r.requestId) : escapeHtml(r.error || 'Request failed');
             return `<tr>
-              <td>${idx + 1}</td>
-              <td>${r.status}</td>
+              <td class="mono">${idx + 1}</td>
+              <td class="mono">${r.status}</td>
               <td><span class="badge ${badgeClass}">${backendLabel}</span></td>
-              <td><code>${detail}</code></td>
-              <td>${escapeHtml(r.timestamp)}</td>
+              <td class="mono">${detail}</td>
+              <td class="mono">${escapeHtml(r.timestamp)}</td>
             </tr>`;
           })
           .join('');
@@ -514,7 +766,7 @@
           const errText = (res.data && (res.data.error || res.data.rawText)) || ('HTTP ' + res.status);
           badgeEl.innerHTML = `<span class="badge badge-ERR">HTTP ${res.status}</span>`;
           metaEl.textContent = `Lỗi thật từ backend ${target}: ${errText}`;
-          tbodyEl.innerHTML = `<tr><td colspan="3" style="color: var(--err-fg);">${escapeHtml(errText)}</td></tr>`;
+          tbodyEl.innerHTML = `<tr><td colspan="3" style="background: var(--pink); font-weight: 800;">${escapeHtml(errText)}</td></tr>`;
           return;
         }
 
@@ -526,11 +778,11 @@
 
         const rows = data.leaderboard || [];
         if (rows.length === 0) {
-          tbodyEl.innerHTML = '<tr><td colspan="3" style="color: var(--muted);">(Trống)</td></tr>';
+          tbodyEl.innerHTML = '<tr><td colspan="3">(Trống)</td></tr>';
           return;
         }
         tbodyEl.innerHTML = rows
-          .map((item, idx) => `<tr><td>${idx + 1}</td><td>${escapeHtml(item.playerId)}</td><td>${item.score}</td></tr>`)
+          .map((item, idx) => `<tr><td class="mono">${idx + 1}</td><td class="mono">${escapeHtml(item.playerId)}</td><td class="mono">${item.score}</td></tr>`)
           .join('');
       }
 
