@@ -3,47 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Seminar Lab — AWS ALB &amp; ElastiCache (Neo-Brutalism)</title>
+  <title>Seminar Lab — AWS ALB &amp; ElastiCache</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Lora:wght@600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --cream: #FAF6E8;
-      --white: #FFFFFF;
-      --black: #000000;
-      --pink: #FE90E8;
-      --cyan: #C0F7FE;
-      --green: #99E885;
-      --yellow: #F7CB46;
-      --peach: #FFDC8B;
-      --border: 3px solid #000000;
-      --border-thin: 2px solid #000000;
-      --shadow: 5px 5px 0px #000000;
-      --shadow-sm: 3px 3px 0px #000000;
+      --bg-outer: #EFE6D5;
+      --paper: #FBF5E6;
+      --paper-alt: #F2E7D1;
+      --ink: #181613;
+      --muted: #5E564B;
+      --orange: #F27127;
+      --orange-hover: #E0621B;
+      --yellow: #F5DF3D;
+      --err-bg: #FDE4DF;
+      --err-ink: #9E1F14;
+      --err-border: #B82518;
+      --line: 1.5px solid #181613;
     }
 
     * { box-sizing: border-box; }
 
     button, input, select {
-      font-family: inherit;
+      font-family: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
     }
 
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      color: var(--black);
-      background-color: var(--cream);
-      background-image: radial-gradient(rgba(0, 0, 0, 0.28) 1px, transparent 1px);
-      background-size: 16px 16px;
-      line-height: 1.45;
-      padding-bottom: 36px;
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--ink);
+      background-color: var(--bg-outer);
+      line-height: 1.5;
+      padding-bottom: 40px;
     }
 
     code, .mono {
-      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      font-weight: 700;
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
 
     .container {
@@ -52,100 +49,79 @@
       padding: 0 18px;
     }
 
-    /* Hero frame inspired by Neo-Brutalism concept frame */
+    /* Editorial Litverse-style header card */
     .hero-frame {
-      position: relative;
-      background: var(--white);
-      border: var(--border);
-      box-shadow: var(--shadow);
-      padding: 20px 22px 18px;
-      margin-bottom: 20px;
+      background: var(--paper);
+      border: var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 18px;
     }
 
-    .corner-handle {
-      position: absolute;
-      width: 10px;
-      height: 10px;
-      background: var(--white);
-      border: var(--border-thin);
-    }
-    .corner-tl { top: -6px; left: -6px; }
-    .corner-tr { top: -6px; right: -6px; }
-    .corner-bl { bottom: -6px; left: -6px; }
-    .corner-br { bottom: -6px; right: -6px; }
-
-    .hero-top {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
+    .hero-topbar {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
+      border-bottom: var(--line);
+      background: var(--paper);
     }
 
-    .pill-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      background: var(--peach);
-      border: var(--border-thin);
-      box-shadow: 2px 2px 0 #000;
+    .hero-top-cell {
+      padding: 10px 16px;
       font-size: 12px;
-      font-weight: 800;
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .hero-top-cell.right {
+      text-align: right;
+    }
+
+    .hero-brand {
+      padding: 10px 26px;
+      border-left: var(--line);
+      border-right: var(--line);
+      font-family: "Lora", Georgia, serif;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      text-align: center;
+      color: var(--ink);
     }
 
-    .pill-tag.accent-pink {
-      background: var(--pink);
-    }
-
-    .hero-title-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 12px;
+    .hero-banner {
+      background: var(--yellow);
+      padding: 18px 22px;
+      text-align: center;
     }
 
     h1 {
-      margin: 0;
-      font-size: 28px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: -0.02em;
-      line-height: 1.15;
-    }
-
-    .spark {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 30px;
-      height: 30px;
-      background: var(--green);
-      border: var(--border-thin);
-      border-radius: 50%;
-      font-size: 16px;
-      font-weight: 900;
-      box-shadow: 2px 2px 0 #000;
+      margin: 0 0 6px;
+      font-family: "Lora", Georgia, serif;
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
     }
 
     .subtitle {
-      margin: 10px 0 0;
+      margin: 0;
       font-size: 13px;
-      font-weight: 600;
+      color: var(--ink);
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       align-items: center;
       gap: 8px;
     }
 
     .origin-chip {
-      padding: 3px 9px;
-      background: var(--cyan);
-      border: var(--border-thin);
+      padding: 3px 10px;
+      background: var(--paper);
+      border: var(--line);
+      border-radius: 8px;
       font-size: 12px;
+      font-weight: 600;
       word-break: break-all;
     }
 
@@ -153,48 +129,47 @@
     .tabs {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 18px;
+      gap: 10px;
+      margin-bottom: 16px;
     }
 
     .tab-btn {
-      padding: 11px 22px;
-      border: var(--border);
-      background: var(--white);
-      color: var(--black);
-      font-size: 15px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
+      padding: 9px 18px;
+      border: var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
-      box-shadow: var(--shadow-sm);
-      transition: transform 0.08s ease, box-shadow 0.08s ease, background-color 0.08s ease;
+      transition: background-color 0.12s ease;
     }
 
     .tab-btn:hover {
-      background: var(--peach);
+      background: var(--paper-alt);
     }
 
     .tab-btn.active {
-      background: var(--yellow);
-      transform: translate(1px, 1px);
-      box-shadow: 4px 4px 0 #000;
+      background: var(--orange);
+      color: var(--ink);
+      font-weight: 700;
     }
 
     /* Main Panels */
     .panel {
       display: none;
-      background: var(--white);
-      border: var(--border);
-      box-shadow: var(--shadow);
+      background: var(--paper);
+      border: var(--line);
+      border-radius: 14px;
       padding: 20px;
     }
 
     .panel.active { display: block; }
 
     .control-block {
-      background: var(--cream);
-      border: var(--border-thin);
+      background: var(--paper-alt);
+      border: var(--line);
+      border-radius: 10px;
       padding: 12px 14px;
       margin-bottom: 14px;
       display: flex;
@@ -204,63 +179,62 @@
     }
 
     label {
-      font-size: 13px;
-      font-weight: 800;
-      text-transform: uppercase;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink);
       display: inline-flex;
       align-items: center;
       gap: 8px;
     }
 
     input, select {
-      padding: 8px 10px;
-      border: var(--border-thin);
-      background: var(--white);
-      color: var(--black);
-      font-size: 14px;
-      font-weight: 700;
-      box-shadow: 2px 2px 0 #000;
+      padding: 7px 10px;
+      border: var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 600;
       outline: none;
     }
 
     input:focus, select:focus {
-      background: var(--cyan);
+      border-color: var(--orange);
+      background: #FFFFFF;
     }
 
     button.action {
-      padding: 9px 15px;
-      border: var(--border-thin);
-      background: var(--white);
-      color: var(--black);
+      padding: 8px 14px;
+      border: var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      color: var(--ink);
       font-size: 13px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
+      font-weight: 600;
       cursor: pointer;
-      box-shadow: var(--shadow-sm);
-      transition: transform 0.07s ease, box-shadow 0.07s ease;
+      transition: background-color 0.12s ease, transform 0.08s ease;
     }
 
     button.action:hover:not(:disabled) {
-      transform: translate(-1px, -1px);
-      box-shadow: 4px 4px 0 #000;
+      background: var(--paper-alt);
+    }
+
+    button.action.primary {
+      background: var(--orange);
+      font-weight: 700;
+    }
+
+    button.action.primary:hover:not(:disabled) {
+      background: var(--orange-hover);
     }
 
     button.action:active:not(:disabled) {
-      transform: translate(2px, 2px);
-      box-shadow: 1px 1px 0 #000;
+      transform: translateY(1px);
     }
-
-    button.action.primary { background: var(--yellow); }
-    button.action.cyan { background: var(--cyan); }
-    button.action.green { background: var(--green); }
-    button.action.pink { background: var(--pink); }
-    button.action.peach { background: var(--peach); }
 
     button.action:disabled {
       opacity: 0.55;
       cursor: not-allowed;
-      box-shadow: 1px 1px 0 #000;
     }
 
     /* Stats */
@@ -273,63 +247,69 @@
 
     @media (max-width: 720px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
+      .hero-topbar { grid-template-columns: 1fr; }
+      .hero-brand { border-left: none; border-right: none; border-top: var(--line); border-bottom: var(--line); }
+      .hero-top-cell.right { text-align: left; }
     }
 
     .stat-box {
       padding: 12px 14px;
-      border: var(--border-thin);
-      box-shadow: var(--shadow-sm);
-      background: var(--peach);
+      border: var(--line);
+      border-radius: 10px;
+      background: var(--paper);
     }
-    .stat-box.stat-a { background: var(--cyan); }
-    .stat-box.stat-b { background: var(--green); }
-    .stat-box.stat-err { background: var(--pink); }
+    .stat-box.stat-a { background: var(--yellow); }
+    .stat-box.stat-b { background: var(--orange); }
+    .stat-box.stat-err { background: var(--paper); }
 
     .stat-label {
       font-size: 11px;
-      font-weight: 900;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.04em;
+      color: var(--ink);
     }
 
     .stat-val {
+      font-family: "Lora", Georgia, serif;
       font-size: 28px;
-      font-weight: 900;
-      line-height: 1.1;
+      font-weight: 700;
+      line-height: 1.15;
       margin-top: 4px;
     }
 
     /* Badges */
     .badge {
       display: inline-block;
-      padding: 3px 10px;
-      border: var(--border-thin);
+      padding: 2px 10px;
+      border: var(--line);
+      border-radius: 999px;
+      font-family: "Be Vietnam Pro", system-ui, sans-serif;
       font-size: 12px;
-      font-weight: 900;
-      text-transform: uppercase;
-      box-shadow: 2px 2px 0 #000;
+      font-weight: 700;
     }
-    .badge-A { background: var(--cyan); color: var(--black); }
-    .badge-B { background: var(--green); color: var(--black); }
-    .badge-ERR { background: var(--pink); color: var(--black); }
+    .badge-A { background: var(--yellow); color: var(--ink); }
+    .badge-B { background: var(--orange); color: var(--ink); }
+    .badge-ERR { background: var(--err-bg); color: var(--err-ink); border-color: var(--err-border); }
 
     /* Tables */
     .table-wrap {
       overflow-x: auto;
-      border: var(--border-thin);
-      box-shadow: var(--shadow-sm);
+      border: var(--line);
+      border-radius: 10px;
+      background: var(--paper);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
-      background: var(--white);
+      font-size: 12.5px;
+      background: var(--paper);
     }
 
     th, td {
-      border-bottom: var(--border-thin);
-      border-right: var(--border-thin);
+      border-bottom: var(--line);
+      border-right: var(--line);
       padding: 9px 11px;
       text-align: left;
     }
@@ -338,10 +318,11 @@
     tr:last-child td { border-bottom: none; }
 
     th {
-      background: var(--yellow);
-      font-weight: 900;
-      text-transform: uppercase;
+      background: var(--paper-alt);
+      font-family: "Be Vietnam Pro", system-ui, sans-serif;
+      font-weight: 700;
       font-size: 12px;
+      text-transform: uppercase;
       letter-spacing: 0.03em;
     }
 
@@ -358,49 +339,49 @@
     }
 
     .card-sub {
-      border: var(--border);
-      box-shadow: var(--shadow);
-      background: var(--white);
+      border: var(--line);
+      border-radius: 14px;
+      background: var(--paper);
       overflow: hidden;
     }
 
     .card-sub-head {
-      padding: 11px 14px;
-      border-bottom: var(--border);
+      padding: 11px 15px;
+      border-bottom: var(--line);
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 8px;
-      font-size: 15px;
-      font-weight: 900;
-      text-transform: uppercase;
+      font-family: "Lora", Georgia, serif;
+      font-size: 16px;
+      font-weight: 700;
     }
 
-    .card-sub-head.head-a { background: var(--cyan); }
-    .card-sub-head.head-b { background: var(--green); }
+    .card-sub-head.head-a { background: var(--yellow); }
+    .card-sub-head.head-b { background: var(--orange); }
 
     .card-sub-body {
-      padding: 12px 14px 14px;
+      padding: 14px;
     }
 
     .status-line {
       font-size: 12px;
-      font-weight: 700;
       margin-bottom: 10px;
-      padding: 6px 9px;
-      background: var(--cream);
-      border: var(--border-thin);
+      padding: 7px 10px;
+      background: var(--paper-alt);
+      border: var(--line);
+      border-radius: 8px;
       word-break: break-word;
     }
 
     .error-banner {
       padding: 11px 14px;
-      background: var(--pink);
-      color: var(--black);
-      border: var(--border);
-      box-shadow: var(--shadow-sm);
-      font-size: 13px;
-      font-weight: 800;
+      background: var(--err-bg);
+      color: var(--err-ink);
+      border: 1.5px solid var(--err-border);
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
       margin: 12px 0;
       display: none;
       white-space: pre-wrap;
@@ -409,13 +390,12 @@
     .log-box {
       margin-top: 16px;
       padding: 12px 14px;
-      background: #111111;
-      color: var(--green);
-      border: var(--border);
-      box-shadow: var(--shadow-sm);
-      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: var(--ink);
+      color: var(--paper);
+      border: var(--line);
+      border-radius: 10px;
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 12px;
-      font-weight: 600;
       max-height: 190px;
       overflow-y: auto;
       white-space: pre-wrap;
@@ -425,39 +405,33 @@
 <body>
   <div class="container">
     <header class="hero-frame">
-      <span class="corner-handle corner-tl"></span>
-      <span class="corner-handle corner-tr"></span>
-      <span class="corner-handle corner-bl"></span>
-      <span class="corner-handle corner-br"></span>
-
-      <div class="hero-top">
-        <span class="pill-tag">CONCEPT // AWS REAL LAB</span>
-        <span class="pill-tag accent-pink">CACHE-CONTROL: NO-STORE</span>
+      <div class="hero-topbar">
+        <div class="hero-top-cell">AWS AP-SOUTHEAST-2</div>
+        <div class="hero-brand">QuizLab</div>
+        <div class="hero-top-cell right">CACHE-CONTROL: NO-STORE</div>
       </div>
 
-      <div class="hero-title-row">
-        <span class="spark" aria-hidden="true">✦</span>
+      <div class="hero-banner">
         <h1>Seminar Lab: AWS ALB &amp; ElastiCache</h1>
+        <p class="subtitle">
+          <span>Endpoint:</span>
+          <code id="originText" class="origin-chip"></code>
+          <span>•</span>
+          <span>Backend tự strip <code>/lab/a</code> &amp; <code>/lab/b</code> • Không fallback ngầm</span>
+        </p>
       </div>
-
-      <p class="subtitle">
-        <span>Endpoint:</span>
-        <code id="originText" class="origin-chip"></code>
-        <span>•</span>
-        <span>Backend tự strip <code>/lab/a</code> &amp; <code>/lab/b</code> • Không fallback ngầm</span>
-      </p>
     </header>
 
     <nav class="tabs" aria-label="Demo tabs">
-      <button class="tab-btn active" data-tab="alb">01 // ALB Routing &amp; Health</button>
-      <button class="tab-btn" data-tab="leaderboard">02 // Shared Leaderboard</button>
+      <button class="tab-btn active" data-tab="alb">01. ALB Routing &amp; Health</button>
+      <button class="tab-btn" data-tab="leaderboard">02. Shared Leaderboard</button>
     </nav>
 
     <!-- TAB 1: ALB -->
     <section id="tab-alb" class="panel active">
       <div class="control-block">
         <button id="btnSend20" class="action primary">Gửi 20 request (/api/whoami)</button>
-        <button id="btnSend1" class="action cyan">Gửi 1 request</button>
+        <button id="btnSend1" class="action">Gửi 1 request</button>
         <button id="btnClearAlb" class="action">Xóa bảng kết quả</button>
       </div>
 
@@ -514,12 +488,12 @@
             <option value="elasticache">elasticache (Valkey dùng chung)</option>
           </select>
         </label>
-        <button id="btnCacheStatus" class="action peach">Kiểm tra Cache Status (A &amp; B)</button>
-        <button id="btnResetRoom" class="action pink">Reset phòng (store đang chọn)</button>
+        <button id="btnCacheStatus" class="action">Kiểm tra Cache Status (A &amp; B)</button>
+        <button id="btnResetRoom" class="action">Reset phòng (store đang chọn)</button>
       </div>
 
       <div class="control-block">
-        <button id="btnWriteAlice100" class="action cyan">Ghi Alice = 100 qua A</button>
+        <button id="btnWriteAlice100" class="action">Ghi Alice = 100 qua A</button>
         <button id="btnSeed3" class="action primary">Seed 3 người chơi qua A (Alice 100, Bob 150, Chi 120)</button>
         <button id="btnAlice170" class="action primary">Update Alice = 170 qua A</button>
       </div>
@@ -534,8 +508,8 @@
           <input id="scoreInput" type="number" value="100" min="0" style="width: 90px;">
         </label>
         <button id="btnPutCustom" class="action">Ghi điểm tùy chọn qua A</button>
-        <button id="btnReadA" class="action cyan">Đọc từ A (/lab/a/...)</button>
-        <button id="btnReadB" class="action green">Đọc từ B (/lab/b/...)</button>
+        <button id="btnReadA" class="action">Đọc từ A (/lab/a/...)</button>
+        <button id="btnReadB" class="action">Đọc từ B (/lab/b/...)</button>
       </div>
 
       <div id="lbErrorBanner" class="error-banner"></div>
@@ -766,7 +740,7 @@
           const errText = (res.data && (res.data.error || res.data.rawText)) || ('HTTP ' + res.status);
           badgeEl.innerHTML = `<span class="badge badge-ERR">HTTP ${res.status}</span>`;
           metaEl.textContent = `Lỗi thật từ backend ${target}: ${errText}`;
-          tbodyEl.innerHTML = `<tr><td colspan="3" style="background: var(--pink); font-weight: 800;">${escapeHtml(errText)}</td></tr>`;
+          tbodyEl.innerHTML = `<tr><td colspan="3" style="background: var(--err-bg); color: var(--err-ink); font-weight: 600;">${escapeHtml(errText)}</td></tr>`;
           return;
         }
 

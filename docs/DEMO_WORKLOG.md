@@ -332,3 +332,65 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ### 6. Đối chiếu tiêu chí nghiệm thu
 - Không làm thay đổi 8/10 tiêu chí đã `Đạt`; sẵn sàng cho người phụ trách mở trình duyệt kiểm tra và quay 2 video dự phòng (tiêu chí 9).
+
+## Entry #8 — 2026-11-26 08:06 — Tinh gọn bảng màu Neo-Brutalism và bo tròn góc cho `public/index.html`
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Ứng dụng & Cache.
+- **Mục tiêu:** Giảm số lượng màu sắc rực rỡ trên giao diện (từ 5 màu nhấn xuống còn 2 màu nhấn chính kết hợp nền trung tính) và bo tròn các góc khối/nút/bảng trong `seminar-lab/alb-elasticache/public/index.html`, sau đó deploy lại lên EC2 A và B.
+- **File chỉnh sửa:** `seminar-lab/alb-elasticache/public/index.html`
+
+### 2. Các thao tác đã thực hiện
+1. Tinh gọn bảng màu trong CSS và HTML:
+   - Nền trung tính: kem `#FAF6E8`, trắng `#FFFFFF`, viền/chữ đen `#000000`.
+   - Giữ 2 màu nhấn chính: vàng `#F7CB46` (nút hành động chính, tab đang chọn, Backend B) và xanh cyan `#C0F7FE` (Backend A); bỏ màu xanh lá `#99E885` và vàng đào `#FFDC8B`, đưa các nút phụ và header bảng về trắng/kem sạch sẽ.
+   - Màu hồng `#FE90E8` chỉ hiển thị khi có lỗi thật (`error-banner`, badge `ERR`).
+2. Bo tròn góc toàn bộ thành phần: `border-radius: 18px` cho hero frame, panel và card kết quả A/B (bỏ 4 ô vuông góc sắc cạnh); `14px` cho tab, khối control, ô stat, khung bảng, hộp log và banner lỗi; `10px` cho nút bấm, ô input/select; `999px` cho pill tag và badge.
+3. Kiểm tra tĩnh HTML/ID (`HTML_AND_IDS_OK`), đóng gói và deploy lại lên EC2 A & B qua `aws ssm send-command`, kiểm tra target health và xác nhận live qua ALB.
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS`
+- **Kết quả kiểm tra live qua `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com`:**
+  - `REDEPLOY A STATUS=Success`, `REDEPLOY B STATUS=Success` (`/health` 200, `/api/cache-status` `connected: true`, `latencyMs: 1`).
+  - `tg-main`, `tg-a`, `tg-b` đều `healthy`.
+  - `GET /`, `GET /lab/a/`, `GET /lab/b/` đều trả `HTTP 200` (`28,884` ký tự).
+
+### 4. Cách tự thực hiện lại / Kiểm tra
+- Mở hoặc tải lại `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com/` (`Ctrl+Shift+R`) để xem giao diện gọn màu, bo góc mới.
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Chỉ thay đổi CSS/HTML lớp trình bày trong `public/index.html`; toàn bộ API, prefix stripping và kết nối Valkey không đổi.
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Giữ nguyên trạng thái 8/10 tiêu chí đã `Đạt`; sẵn sàng cho người phụ trách quay 2 video dự phòng (tiêu chí 9).
+
+## Entry #9 — 2026-11-26 08:10 — Đổi giao diện sang bảng màu ấm (Litverse) và bộ phông chữ Lora + IBM Plex Mono + Be Vietnam Pro
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Ứng dụng & Cache.
+- **Mục tiêu:** Chuyển giao diện `seminar-lab/alb-elasticache/public/index.html` sang phong cách editorial ấm áp theo ảnh mẫu người dùng gửi (`#EFE6D5`, `#FBF5E6`, `#F2E7D1`, `#F5DF3D`, `#F27127`, mực `#181613`, viền mảnh `1.5px` bo góc) và phối 3 phông chữ hỗ trợ đầy đủ tiếng Việt (`Lora`, `IBM Plex Mono`, `Be Vietnam Pro`), rồi redeploy lên EC2 A và B.
+- **File chỉnh sửa:** `seminar-lab/alb-elasticache/public/index.html`
+
+### 2. Các thao tác đã thực hiện
+1. Kiểm tra qua Google Fonts xác nhận cả 3 font (`Lora`, `IBM Plex Mono`, `Be Vietnam Pro`) đều có subset `vietnamese`.
+2. Cập nhật `public/index.html`:
+   - Bảng màu mới: nền ngoài `#EFE6D5`, mặt thẻ `#FBF5E6`, nền phụ `#F2E7D1`, viền mực `#181613` (`1.5px solid`, bỏ đổ bóng nặng), màu nhấn chính cam `#F27127` (tab active, nút hành động chính, Backend B) và vàng `#F5DF3D` (banner tiêu đề, Backend A); lỗi dùng nền đỏ nhạt `#FDE4DF` / chữ `#9E1F14`.
+   - Phông chữ: `Lora` cho tiêu đề/card header/số thống kê; `IBM Plex Mono` cho thân trang, bảng và log; `Be Vietnam Pro` cho nút, input, dropdown và badge.
+   - Bố cục tiêu đề trên cùng chia 3 ngăn (`AWS AP-SOUTHEAST-2 | QUIZLAB | CACHE-CONTROL: NO-STORE`) kèm dải banner vàng bên dưới.
+3. Kiểm tra tĩnh HTML/ID (`HTML_AND_IDS_OK`, `28,357` bytes), đóng gói và deploy lên EC2 A & B qua `aws ssm send-command`, kiểm tra live qua ALB.
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS`
+- **Kết quả kiểm tra live qua `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com`:**
+  - `REDEPLOY A STATUS=Success`, `REDEPLOY B STATUS=Success` (`/health` 200, `/api/cache-status` `connected: true`, `ping: "PONG"`).
+  - `tg-main`, `tg-a`, `tg-b` đều `healthy`.
+  - `GET /`, `GET /lab/a/`, `GET /lab/b/` đều trả `HTTP 200` (`28,357` ký tự).
+
+### 4. Cách tự thực hiện lại / Kiểm tra
+- Tải lại `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com/` (`Ctrl+Shift+R`) để xem giao diện mới.
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Chỉ thay đổi CSS/HTML lớp trình bày trong `public/index.html`; toàn bộ API, strip prefix `/lab/a` & `/lab/b` và kết nối Valkey TLS/RBAC giữ nguyên như đã nghiệm thu ở `Entry #5`.
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Giữ nguyên trạng thái 8/10 tiêu chí đã `Đạt`; sẵn sàng cho người phụ trách quay 2 video dự phòng (tiêu chí 9).
