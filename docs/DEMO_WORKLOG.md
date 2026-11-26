@@ -66,7 +66,7 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 | 6 | ElastiCache ghi A đọc B | **Đạt** | Entry #5 | Seed qua A, B đọc `[bob: 150, chi: 120, alice: 100]` (3/3 lượt) |
 | 7 | Alice cập nhật 170 lên đầu | **Đạt** | Entry #5 | Update 170 (lặp 2 lần không tăng thêm), B đọc Alice đầu `170` (3/3 lượt) |
 | 8 | Restart A không xóa dữ liệu remote | **Đạt** | Entry #5 | Stop A -> B vẫn đọc được; Start A -> A đọc lại được (3/3 lượt) |
-| 9 | 2 video dưới 3 phút cho từng demo | Chờ quay | — | Lab đã sẵn sàng để quay 2 video màn hình kèm AWS Console |
+| 9 | 2 video dưới 3 phút cho từng demo | **Đạt** | Entry #11, #12 | `demo1.mp4` (`1m33s`) & `docs/demo2.mp4` (`2m13s`), liền mạch, có Console + SSM thật |
 | 10 | Cleanup và chi phí theo cấu hình | Chờ cleanup | Entry #5 | Đã tính chi phí & tạo `cleanup-aws.sh`; chờ chạy sau khi quay video & thuyết trình |
 
 ---
@@ -461,3 +461,38 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ### 6. Đối chiếu tiêu chí nghiệm thu
 - Phục vụ Tiêu chí `9` (*Video dưới 3 phút cho từng demo*): đã có `demo1.mp4` (`1m33s`), còn thiếu `demo2.mp4`.
+
+## Entry #12 — 2026-11-26 09:06 — Kiểm tra video dự phòng Demo 2 (`docs/demo2.mp4`) và cập nhật nghiệm thu
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Tài liệu & Video.
+- **Mục tiêu:** Kiểm tra thời lượng, trình tự thao tác và độ khớp tiêu chí của video Demo 2 (`docs/demo2.mp4`), đồng thời cập nhật trạng thái Tiêu chí 9 trong biên bản nghiệm thu và checklist.
+- **File kiểm tra & cập nhật:**
+  - Kiểm tra: `docs/demo2.mp4` (`95.33 MB`, thời lượng `133.05s` = `2 phút 13 giây`).
+  - Cập nhật: `docs/ACCEPTANCE_REPORT.md`, `docs/DEMO_TASKS.md`, `docs/DEMO_WORKLOG.md`.
+
+### 2. Các thao tác đã thực hiện
+1. Kiểm tra kích thước, thời lượng MP4 (`mvhd` atom) và rà soát file video trong `docs/`.
+2. Xem toàn bộ video `docs/demo2.mp4` từ `00:00` đến `02:13`, đối chiếu từng mốc với Mục 7 & Mục 12 của `docs/ALB_ElastiCache_Demo_Handover.md` và Slide 9 của `docs/ALB_ElastiCache_Noi_dung_chi_tiet.md`.
+3. Cập nhật Tiêu chí `9` sang **Đạt** trong `docs/ACCEPTANCE_REPORT.md`, `docs/DEMO_TASKS.md` và bảng tổng hợp của `docs/DEMO_WORKLOG.md`.
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS` (Đạt đầy đủ tất cả mốc bắt buộc của Demo 2).
+- **Diễn biến quan sát thật trong `docs/demo2.mp4`:**
+  - `00:00–00:10`: Mở AWS Console `quizlab-valkey` (`Status: Available`, `Engine: Valkey 8.2.0`, `cache.t4g.micro`, `Cluster mode: Disabled`, `1` node, `Encryption in transit: Required`).
+  - `00:11–00:32`: Tab `02. Shared Leaderboard`, chế độ `memory`: bấm `Ghi Alice = 100 qua A` → Backend A hiện `alice: 100`; bấm `Đọc từ B` → Backend B hiện `(Trống)`.
+  - `00:34–00:49`: Đổi sang `elasticache`, bấm `Seed 3 người chơi qua A` → bấm `Đọc từ B` → Backend B (`backendId: B`, `storeMode=elasticache`) trả đúng `[bob: 150, chi: 120, alice: 100]`.
+  - `00:50–01:03`: Bấm `Update Alice = 170 qua A` → bấm `Đọc từ B` → Backend B đọc `[alice: 170, bob: 150, chi: 120]`.
+  - `01:06–01:46`: Trên terminal SSM EC2 A (`i-0cca77524a1964c16`) chạy `sudo docker stop quizlab` → bấm `Đọc từ B` vẫn đọc đủ bảng điểm; bấm thử `Đọc từ A` hiện đúng lỗi thật `HTTP 502 Bad Gateway` (không giấu lỗi, không fallback ngầm về RAM).
+  - `01:47–02:13`: Trên terminal SSM chạy `sudo docker start quizlab` → bấm `Đọc từ A` → `backendId: A` đọc lại nguyên vẹn `[alice: 170, bob: 150, chi: 120]`.
+
+### 4. Cách tự thực hiện lại / Bước tiếp theo
+- Sau khi hoàn thành buổi seminar (hoặc không cần chạy live nữa), chạy `./seminar-lab/alb-elasticache/cleanup-aws.sh --yes` để xóa toàn bộ tài nguyên AWS đang bật (tiêu chí 10) và cập nhật xác nhận vào `docs/ACCEPTANCE_REPORT.md` + `docs/DEMO_WORKLOG.md`.
+- Lưu 2 file video lớn (`demo1.mp4` ~67 MB, `docs/demo2.mp4` ~95 MB) ở Drive/máy trình diễn, không push file video nặng lên GitHub.
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Trong `demo2.mp4`, nút `Update Alice = 170` được bấm 1 lần (chưa bấm lặp lần 2 trên clip, tuy đã kiểm chứng không cộng dồn khi test 3 lần ở `Entry #5`); khi thuyết trình có thể giải thích thêm đặc tính ghi đè tuyệt đối của `ZADD` hoặc bấm lặp nếu chạy live.
+- Tại thời điểm kiểm tra, `docs/video/demo1.mp4` không còn trong `docs/` (người dùng đã di chuyển ra ngoài thư mục `docs/` sau khi kiểm tra ở `Entry #11`).
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Tiêu chí `9` (*Video dưới 3 phút cho từng demo*) đổi sang **Đạt** (`9/10` tiêu chí đã Đạt; chỉ còn Tiêu chí `10` — Cleanup sau khi xong buổi seminar).

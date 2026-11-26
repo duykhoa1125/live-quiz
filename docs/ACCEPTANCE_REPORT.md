@@ -35,7 +35,7 @@
 | 6 | ElastiCache ghi A đọc B | **Đạt** | Seed `alice=100, bob=150, chi=120` qua `/lab/a/...?store=elasticache` → `/lab/b/...` đọc `[bob: 150, chi: 120, alice: 100]` |
 | 7 | Alice cập nhật 170 lên đầu | **Đạt** | Ghi `alice=170` 2 lần liên tiếp qua A → B đọc `[alice: 170, bob: 150, chi: 120]` (không cộng dồn) |
 | 8 | Restart A không xóa dữ liệu remote | **Đạt** | `docker stop quizlab` trên A → B vẫn đọc được bảng điểm; `docker start quizlab` trên A → A đọc lại `[alice: 170, bob: 150, chi: 120]` |
-| 9 | Video dưới 3 phút cho từng demo | **Chưa quay** | Lab đã chạy ổn định 3 lần liên tiếp; chờ người phụ trách demo quay 2 video màn hình kèm AWS Console |
+| 9 | Video dưới 3 phút cho từng demo | **Đạt** | Đã kiểm tra `demo1.mp4` (`1m33s`, Entry #11) và `docs/demo2.mp4` (`2m13s`, Entry #12) đều liền mạch, có AWS Console + SSM thật |
 | 10 | Cleanup và chi phí theo cấu hình | **Đang chờ** | Đã lập bảng chi phí `ap-southeast-2` và script [cleanup-aws.sh](file:///home/khoa/projects/live-quiz/seminar-lab/alb-elasticache/cleanup-aws.sh); chờ chạy sau khi quay video & thuyết trình |
 
 ---

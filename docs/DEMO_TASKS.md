@@ -30,7 +30,7 @@ Tài liệu này tổng hợp đúng và đủ toàn bộ đầu việc để ho
 ### Ngày 2 — Sửa lỗi, Lặp lại, Quay video, Nghiệm thu & Cleanup
 - [x] Sửa các lỗi phát sinh (Valkey default RBAC, SSM `put-parameter` tags/overwrite) và đối chiếu response, `backendId`, `storeMode`, thứ tự điểm.
 - [x] Chạy lại toàn bộ kịch bản **3 lần** (`Run #1`, `Run #2`, `Run #3`) kiểm tra tính lặp lại; chốt thứ tự reset dữ liệu và khôi phục backend A giữa 2 demo.
-- [ ] **Bạn tự thao tác tập & quay:** Quay **2 video dự phòng** từ lab thật (mỗi video ≤ 3 phút, có màn hình AWS Console); lưu ảnh Console; tập thao tác mỗi demo tối đa **3 phút**.
+- [x] **Bạn tự thao tác tập & quay:** Quay **2 video dự phòng** từ lab thật (`demo1.mp4` `1m33s`, `demo2.mp4` `2m13s`, đều ≤ 3 phút và có màn hình AWS Console). *(Lưu ý chụp thêm ảnh Console `2 Healthy` sau restart A nếu cần kẹp hồ sơ và giữ 2 file video ngoài GitHub).*
 - [ ] Phối hợp tổng duyệt toàn buổi seminar **20 phút** cùng người làm slide/thuyết trình.
 - [ ] Chạy cleanup (`./seminar-lab/alb-elasticache/cleanup-aws.sh --yes`) sau khi xong và cập nhật xác nhận đã xóa vào [ACCEPTANCE_REPORT.md](file:///home/khoa/projects/live-quiz/docs/ACCEPTANCE_REPORT.md) + [DEMO_WORKLOG.md](file:///home/khoa/projects/live-quiz/docs/DEMO_WORKLOG.md).
 
