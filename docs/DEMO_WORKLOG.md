@@ -8,7 +8,7 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ## Hướng dẫn tự thực hiện demo nhanh (Runbook tổng hợp)
 
-> **Trạng thái hiện tại:** **Đã dựng hoàn chỉnh hạ tầng AWS thật tại `ap-southeast-2`**, deploy ứng dụng `quizlab` lên EC2 A & B, kết nối Valkey `8.2.0` qua TLS + RBAC thành công, và **kiểm thử đạt cả 2 kịch bản Demo ALB & Demo ElastiCache qua 3 lần chạy liên tiếp**. Hiện lab đang chạy để người phụ trách mở trình duyệt tập thao tác, chụp ảnh console và quay 2 video dự phòng, sau đó chạy cleanup.
+> **Trạng thái hiện tại:** **Đã hoàn tất cả 10/10 tiêu chí nghiệm thu và đã cleanup sạch toàn bộ tài nguyên AWS trên `ap-southeast-2`** (`Entry #13`). Mã nguồn lab vẫn giữ đầy đủ trong `seminar-lab/alb-elasticache/`, cùng 2 video dự phòng đã quay (`demo1.mp4` `1m33s` và `docs/demo2.mp4` `2m13s`).
 
 ### Tài liệu tham chiếu chính
 - Đặc tả & tiêu chí bàn giao: [ALB_ElastiCache_Demo_Handover.md](file:///home/khoa/projects/live-quiz/docs/ALB_ElastiCache_Demo_Handover.md)
@@ -18,14 +18,14 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 - Kịch bản 20 phút & timeline từng demo (3 phút/demo): [ALB_ElastiCache_Noi_dung_chi_tiet.md](file:///home/khoa/projects/live-quiz/docs/ALB_ElastiCache_Noi_dung_chi_tiet.md)
 - Kiến thức nền tảng & Q&A: [ALB_ElastiCache_Kien_thuc_theo_slide.md](file:///home/khoa/projects/live-quiz/docs/ALB_ElastiCache_Kien_thuc_theo_slide.md)
 
-### Thông tin cấu hình môi trường thực tế
+### Thông tin cấu hình môi trường (đã dựng & đã cleanup)
 | Thành phần | Giá trị thực tế | Ghi chú |
 |---|---|---|
 | AWS Region | `ap-southeast-2` (Sydney) | `ap-southeast-1` bị chặn bởi SCP `p-3qq7zdmg` |
-| ALB DNS | `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com` | HTTP port 80, SG mở cho `117.5.142.230/32` |
-| EC2 A (`BACKEND_ID=A`) | `i-0cca77524a1964c16` (`t3.micro`, `ap-southeast-2a`) | Vận hành qua SSM Session Manager |
-| EC2 B (`BACKEND_ID=B`) | `i-0ccf80b64328d1526` (`t3.micro`, `ap-southeast-2b`) | Vận hành qua SSM Session Manager |
-| ElastiCache Valkey | `master.quizlab-valkey.x4rjiz.apse2.cache.amazonaws.com:6379` | Valkey `8.2.0`, `cache.t4g.micro`, 1 primary, 0 replica, TLS + RBAC (`quizlab:*`) |
+| ALB DNS | `quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com` *(đã xóa)* | HTTP port 80 |
+| EC2 A (`BACKEND_ID=A`) | `i-0cca77524a1964c16` (`t3.micro`, `ap-southeast-2a`) *(terminated)* | Vận hành qua SSM Session Manager |
+| EC2 B (`BACKEND_ID=B`) | `i-0ccf80b64328d1526` (`t3.micro`, `ap-southeast-2b`) *(terminated)* | Vận hành qua SSM Session Manager |
+| ElastiCache Valkey | `master.quizlab-valkey.x4rjiz.apse2.cache.amazonaws.com:6379` *(đã xóa)* | Valkey `8.2.0`, `cache.t4g.micro`, TLS + RBAC (`quizlab:*`) |
 | Thư mục code lab | `seminar-lab/alb-elasticache/` | Node.js 24 + Docker, container `quizlab` (`--restart unless-stopped`) |
 
 ### Tóm tắt trình tự tự chạy 2 demo (đã kiểm chứng trên AWS thật)
@@ -67,7 +67,7 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 | 7 | Alice cập nhật 170 lên đầu | **Đạt** | Entry #5 | Update 170 (lặp 2 lần không tăng thêm), B đọc Alice đầu `170` (3/3 lượt) |
 | 8 | Restart A không xóa dữ liệu remote | **Đạt** | Entry #5 | Stop A -> B vẫn đọc được; Start A -> A đọc lại được (3/3 lượt) |
 | 9 | 2 video dưới 3 phút cho từng demo | **Đạt** | Entry #11, #12 | `demo1.mp4` (`1m33s`) & `docs/demo2.mp4` (`2m13s`), liền mạch, có Console + SSM thật |
-| 10 | Cleanup và chi phí theo cấu hình | Chờ cleanup | Entry #5 | Đã tính chi phí & tạo `cleanup-aws.sh`; chờ chạy sau khi quay video & thuyết trình |
+| 10 | Cleanup và chi phí theo cấu hình | **Đạt** | Entry #5, #13 | Đã tính chi phí & xóa sạch toàn bộ tài nguyên lab (còn lại đúng default VPC) |
 
 ---
 
@@ -496,3 +496,38 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ### 6. Đối chiếu tiêu chí nghiệm thu
 - Tiêu chí `9` (*Video dưới 3 phút cho từng demo*) đổi sang **Đạt** (`9/10` tiêu chí đã Đạt; chỉ còn Tiêu chí `10` — Cleanup sau khi xong buổi seminar).
+
+## Entry #13 — 2026-11-26 09:28 — Kiểm tra và hoàn tất Cleanup toàn bộ tài nguyên AWS (`ap-southeast-2`)
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Cleanup.
+- **Mục tiêu:** Kiểm chứng kết quả sau khi người dùng chạy `./seminar-lab/alb-elasticache/cleanup-aws.sh --yes`, xử lý nốt tài nguyên còn sót và cập nhật hoàn tất 10/10 tiêu chí nghiệm thu.
+- **File chỉnh sửa:**
+  - `seminar-lab/alb-elasticache/cleanup-aws.sh` (sửa typo ID route table `rtb-02a64f7cdd79309b` → `rtb-02a64f7cdd79309b9`)
+  - `docs/AWS_CONFIG_COST_CLEANUP.md`, `docs/ACCEPTANCE_REPORT.md`, `docs/DEMO_TASKS.md`, `docs/DEMO_WORKLOG.md`
+
+### 2. Các thao tác đã thực hiện
+1. Kiểm tra toàn bộ tài nguyên trong `ap-southeast-2`, IAM và SSM (`ec2`, `elbv2`, `elasticache`, `ssm`, `iam`).
+2. Xác nhận toàn bộ tài nguyên tính phí đã xóa (`EC2` `terminated`, `EBS`, `EIP`, `ALB`, `Target Groups`, `ElastiCache Valkey`, `SSM Parameter`, `IAM role/profile` đều không còn), nhưng phát hiện `vpc-0ef86bf0b601de975` vẫn còn vì route table `rtb-02a64f7cdd79309b9` chưa xóa do thiếu 1 ký tự `9` cuối trong `cleanup-aws.sh`.
+3. Chạy `aws ec2 delete-route-table --route-table-id rtb-02a64f7cdd79309b9` và `aws ec2 delete-vpc --vpc-id vpc-0ef86bf0b601de975`.
+4. Sửa đúng ID `rtb-02a64f7cdd79309b9` trong `cleanup-aws.sh` & `docs/AWS_CONFIG_COST_CLEANUP.md`, và cập nhật Tiêu chí `10` sang **Đạt** (`10/10` tiêu chí hoàn thành).
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS`
+- **Tài nguyên đã xóa sạch (kiểm chứng trên AWS thật):**
+  - `quizlab-alb`, `quizlab-tg-main`, `quizlab-tg-a`, `quizlab-tg-b`, 2 ALB Elastic IPs.
+  - `quizlab-valkey` (`quizlab-valkey-001`), `quizlab-cache-subnet-group`, `quizlab-user-group`, `quizlab-app`, `quizlab-default-off`, SSM `/quizlab/valkey_password`.
+  - EC2 `i-0cca77524a1964c16` (`quizlab-ec2-a`), `i-0ccf80b64328d1526` (`quizlab-ec2-b`) ở trạng thái `terminated`; `0` EBS volume, `0` snapshot, `0` NAT Gateway, `0` EIP.
+  - `igw-038e8ffb953796db9`, 4 subnets, 3 Security Groups, `rtb-02a64f7cdd79309b9`, `rtb-06c6510df171026dd`, `vpc-0ef86bf0b601de975`.
+  - IAM `quizlab-ec2-ssm-role` và `quizlab-ec2-ssm-profile`.
+- **Tài nguyên còn giữ có chủ ý (vốn có sẵn từ trước):** Default VPC `vpc-03c23ad16d65cbeb4` (`IsDefault: true`), Key Pair `ec2-key`, IAM user `khoa-cli`.
+
+### 4. Cách tự thực hiện lại nếu cần dựng lại sau này
+- Dùng lại mã nguồn trong `seminar-lab/alb-elasticache/` và quy trình ở `Entry #5` / `docs/AWS_CONFIG_COST_CLEANUP.md`: mất khoảng **6–8 phút** cho toàn bộ hạ tầng AWS thật (lâu nhất là tạo node ElastiCache Valkey mất `~4.5 phút`; các bước VPC/EC2/ALB/Docker deploy chạy song song mất `~2–3 phút`).
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Ảnh chụp terminal SSM (`aws ssm start-session --target i-0cca77524a1964c16`, `SessionId: khoa-cli-...`, `sudo docker stop quizlab`) hoàn toàn an toàn, không chứa Access Key, Secret Key hay mật khẩu Valkey.
+- Nhắc người dùng có thể Deactivate/Delete Access Key (`<KHOA_CLI_ACCESS_KEY_ID>`) của `khoa-cli` trong IAM Console khi không cần dùng AWS CLI nữa.
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Tiêu chí `10` (*Cleanup và chi phí theo cấu hình*) chuyển sang **Đạt** → Hoàn tất **10/10** tiêu chí ở Mục 12 của `docs/ALB_ElastiCache_Demo_Handover.md`.

@@ -36,7 +36,7 @@
 | 7 | Alice cập nhật 170 lên đầu | **Đạt** | Ghi `alice=170` 2 lần liên tiếp qua A → B đọc `[alice: 170, bob: 150, chi: 120]` (không cộng dồn) |
 | 8 | Restart A không xóa dữ liệu remote | **Đạt** | `docker stop quizlab` trên A → B vẫn đọc được bảng điểm; `docker start quizlab` trên A → A đọc lại `[alice: 170, bob: 150, chi: 120]` |
 | 9 | Video dưới 3 phút cho từng demo | **Đạt** | Đã kiểm tra `demo1.mp4` (`1m33s`, Entry #11) và `docs/demo2.mp4` (`2m13s`, Entry #12) đều liền mạch, có AWS Console + SSM thật |
-| 10 | Cleanup và chi phí theo cấu hình | **Đang chờ** | Đã lập bảng chi phí `ap-southeast-2` và script [cleanup-aws.sh](file:///home/khoa/projects/live-quiz/seminar-lab/alb-elasticache/cleanup-aws.sh); chờ chạy sau khi quay video & thuyết trình |
+| 10 | Cleanup và chi phí theo cấu hình | **Đạt** | Đã ước tính chi phí `ap-southeast-2` (~`$0.08–$0.09/giờ`) và chạy dọn sạch 100% tài nguyên lab qua [cleanup-aws.sh](file:///home/khoa/projects/live-quiz/seminar-lab/alb-elasticache/cleanup-aws.sh) + dọn nốt `rtb-02a64f7cdd79309b9` & `vpc-0ef86bf0b601de975` (`Entry #13`); chỉ còn default VPC `vpc-03c23ad16d65cbeb4` |
 
 ---
 

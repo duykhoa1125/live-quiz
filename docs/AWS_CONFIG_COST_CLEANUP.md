@@ -35,7 +35,7 @@ flowchart TD
 | Public Subnet AZ2 | `quizlab-public-2b` | `subnet-0644bedb5397a6153` | `10.20.2.0/24` (`ap-southeast-2b`, auto public IPv4) |
 | Private Subnet AZ1 | `quizlab-private-2a` | `subnet-07949064af01a3939` | `10.20.11.0/24` (`ap-southeast-2a`) |
 | Private Subnet AZ2 | `quizlab-private-2b` | `subnet-093534aa4d586dc05` | `10.20.12.0/24` (`ap-southeast-2b`) |
-| Route Table Public | `quizlab-rt-public` | `rtb-02a64f7cdd79309b` | `0.0.0.0/0 -> igw-038e8ffb953796db9` |
+| Route Table Public | `quizlab-rt-public` | `rtb-02a64f7cdd79309b9` | `0.0.0.0/0 -> igw-038e8ffb953796db9` |
 | Route Table Private | `quizlab-rt-private` | `rtb-06c6510df171026dd` | Local only |
 
 ### Security Groups
@@ -120,5 +120,6 @@ Hoặc thực hiện thủ công theo đúng 5 bước phụ thuộc trong scrip
 5. Xóa IAM instance profile `quizlab-ec2-ssm-profile`, inline policy `quizlab-read-valkey-param`, detach `AmazonSSMManagedInstanceCore` và xóa role `quizlab-ec2-ssm-role`.
 
 ### Danh sách tài nguyên đã xóa / còn giữ
-- **Trạng thái hiện tại (2026-11-25):** Hạ tầng **đang chạy** để bạn mở trình duyệt kiểm tra, tập chạy kịch bản và quay 2 video dự phòng.
-- Sau khi chạy cleanup, điền danh sách xác nhận đã xóa vào [ACCEPTANCE_REPORT.md](file:///home/khoa/projects/live-quiz/docs/ACCEPTANCE_REPORT.md) và ghi thêm một Entry mới trong [DEMO_WORKLOG.md](file:///home/khoa/projects/live-quiz/docs/DEMO_WORKLOG.md).
+- **Trạng thái hiện tại (2026-11-26 09:28 UTC):** **Đã cleanup hoàn toàn.** Toàn bộ tài nguyên lab (`quizlab-alb`, 3 Target Groups, `quizlab-valkey` + subnet group + RBAC user group/users, SSM `/quizlab/valkey_password`, 2 EC2 `i-0cca77524a1964c16` & `i-0ccf80b64328d1526` + 2 EBS `gp3` + 2 ALB EIPs, 3 Security Groups, `igw-038e8ffb953796db9`, 4 subnets, 2 route tables `rtb-02a64f7cdd79309b9` & `rtb-06c6510df171026dd`, `vpc-0ef86bf0b601de975`, IAM role `quizlab-ec2-ssm-role` & profile `quizlab-ec2-ssm-profile`) đã được xóa sạch và kiểm chứng trên `ap-southeast-2`.
+- **Tài nguyên còn giữ có chủ ý (từ trước khi làm lab):** Default VPC `vpc-03c23ad16d65cbeb4` (`IsDefault: true`), Key Pair `ec2-key` (`key-0bb871407c660c74f`), và IAM user `khoa-cli` (nên tắt/xóa Access Key khi không cần thao tác CLI nữa).
+- Xem nhật ký đối chiếu cuối cùng tại [ACCEPTANCE_REPORT.md](file:///home/khoa/projects/live-quiz/docs/ACCEPTANCE_REPORT.md) và `Entry #13` trong [DEMO_WORKLOG.md](file:///home/khoa/projects/live-quiz/docs/DEMO_WORKLOG.md).
