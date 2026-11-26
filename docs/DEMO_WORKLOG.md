@@ -394,3 +394,35 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ### 6. Đối chiếu tiêu chí nghiệm thu
 - Giữ nguyên trạng thái 8/10 tiêu chí đã `Đạt`; sẵn sàng cho người phụ trách quay 2 video dự phòng (tiêu chí 9).
+
+## Entry #10 — 2026-11-26 08:17 — Bổ sung bộ icon nét mảnh chỉ viền (`fill: none`) cho `public/index.html`
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Ứng dụng & Cache.
+- **Mục tiêu:** Bổ sung 17 icon SVG nét mảnh chỉ viền (không nền, không tô đặc, `stroke-width: 1.75`) đồng bộ phong cách editorial trong ảnh mẫu vào `seminar-lab/alb-elasticache/public/index.html` và redeploy lên EC2 A và B.
+- **File chỉnh sửa:** `seminar-lab/alb-elasticache/public/index.html`
+
+### 2. Các thao tác đã thực hiện
+1. Thêm lớp CSS `.ico` (`fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;`) và căn chỉnh `inline-flex` cho `.hero-top-cell`, `.tab-btn` và `button.action`.
+2. Gắn 17 SVG outline trực tiếp vào:
+   - Thanh topbar (`AWS AP-SOUTHEAST-2` globe, `CACHE-CONTROL: NO-STORE` shield-check)
+   - 2 tab (`01. ALB Routing & Health` branch, `02. Shared Leaderboard` database)
+   - Toàn bộ nút thao tác (`Gửi 20 request` play tam giác nét mảnh, `Gửi 1 request` send, `Xóa bảng` trash, `Kiểm tra Cache Status` activity, `Reset phòng` rotate-ccw, `Ghi Alice`/`Ghi tùy chọn` edit, `Seed 3 người chơi` users, `Update Alice 170` arrow-up-circle, `Đọc từ A/B` cloud-download)
+   - Tiêu đề card `Backend A` và `Backend B` (server icon)
+3. Kiểm tra tĩnh HTML/SVG/ID (`HTML_AND_SVG_OK svgs= 17 bytes= 32651`), đóng gói và deploy lên EC2 A & B qua `aws ssm send-command`, kiểm tra qua ALB.
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS`
+- **Kết quả kiểm tra live qua `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com`:**
+  - `REDEPLOY A STATUS=Success`, `REDEPLOY B STATUS=Success` (`/health` 200, `/api/cache-status` `connected: true`, `ping: "PONG"`, `latencyMs: 1`).
+  - `tg-main`, `tg-a`, `tg-b` đều `healthy`.
+  - `GET /`, `GET /lab/a/`, `GET /lab/b/` đều trả `HTTP 200` (`32,651` ký tự).
+
+### 4. Cách tự thực hiện lại / Kiểm tra
+- Tải lại `http://quizlab-alb-1079474885.ap-southeast-2.elb.amazonaws.com/` (`Ctrl+Shift+R`) để xem các icon mới.
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Toàn bộ icon là SVG nội tuyến nhẹ, không phụ thuộc thư viện icon ngoài (không lo lỗi tải CDN khi thuyết trình).
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Giữ nguyên 8/10 tiêu chí đã `Đạt`; sẵn sàng cho bước quay 2 video dự phòng (tiêu chí 9).

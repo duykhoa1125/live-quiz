@@ -25,6 +25,22 @@
 
     * { box-sizing: border-box; }
 
+    .ico {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .ico-sm {
+      width: 14px;
+      height: 14px;
+    }
+
     button, input, select {
       font-family: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
     }
@@ -71,9 +87,12 @@
       font-size: 12px;
       font-weight: 600;
       color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 7px;
     }
     .hero-top-cell.right {
-      text-align: right;
+      justify-content: flex-end;
     }
 
     .hero-brand {
@@ -142,6 +161,9 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       transition: background-color 0.12s ease;
     }
 
@@ -212,6 +234,9 @@
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
       transition: background-color 0.12s ease, transform 0.08s ease;
     }
 
@@ -249,7 +274,7 @@
       .stats { grid-template-columns: repeat(2, 1fr); }
       .hero-topbar { grid-template-columns: 1fr; }
       .hero-brand { border-left: none; border-right: none; border-top: var(--line); border-bottom: var(--line); }
-      .hero-top-cell.right { text-align: left; }
+      .hero-top-cell.right { justify-content: flex-start; }
     }
 
     .stat-box {
@@ -406,9 +431,15 @@
   <div class="container">
     <header class="hero-frame">
       <div class="hero-topbar">
-        <div class="hero-top-cell">AWS AP-SOUTHEAST-2</div>
+        <div class="hero-top-cell">
+          <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span>AWS AP-SOUTHEAST-2</span>
+        </div>
         <div class="hero-brand">QuizLab</div>
-        <div class="hero-top-cell right">CACHE-CONTROL: NO-STORE</div>
+        <div class="hero-top-cell right">
+          <svg class="ico ico-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+          <span>CACHE-CONTROL: NO-STORE</span>
+        </div>
       </div>
 
       <div class="hero-banner">
@@ -423,16 +454,31 @@
     </header>
 
     <nav class="tabs" aria-label="Demo tabs">
-      <button class="tab-btn active" data-tab="alb">01. ALB Routing &amp; Health</button>
-      <button class="tab-btn" data-tab="leaderboard">02. Shared Leaderboard</button>
+      <button class="tab-btn active" data-tab="alb">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+        <span>01. ALB Routing &amp; Health</span>
+      </button>
+      <button class="tab-btn" data-tab="leaderboard">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+        <span>02. Shared Leaderboard</span>
+      </button>
     </nav>
 
     <!-- TAB 1: ALB -->
     <section id="tab-alb" class="panel active">
       <div class="control-block">
-        <button id="btnSend20" class="action primary">Gửi 20 request (/api/whoami)</button>
-        <button id="btnSend1" class="action">Gửi 1 request</button>
-        <button id="btnClearAlb" class="action">Xóa bảng kết quả</button>
+        <button id="btnSend20" class="action primary">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+          <span>Gửi 20 request (/api/whoami)</span>
+        </button>
+        <button id="btnSend1" class="action">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          <span>Gửi 1 request</span>
+        </button>
+        <button id="btnClearAlb" class="action">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          <span>Xóa bảng kết quả</span>
+        </button>
       </div>
 
       <div class="stats">
@@ -488,14 +534,29 @@
             <option value="elasticache">elasticache (Valkey dùng chung)</option>
           </select>
         </label>
-        <button id="btnCacheStatus" class="action">Kiểm tra Cache Status (A &amp; B)</button>
-        <button id="btnResetRoom" class="action">Reset phòng (store đang chọn)</button>
+        <button id="btnCacheStatus" class="action">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Kiểm tra Cache Status (A &amp; B)</span>
+        </button>
+        <button id="btnResetRoom" class="action">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          <span>Reset phòng (store đang chọn)</span>
+        </button>
       </div>
 
       <div class="control-block">
-        <button id="btnWriteAlice100" class="action">Ghi Alice = 100 qua A</button>
-        <button id="btnSeed3" class="action primary">Seed 3 người chơi qua A (Alice 100, Bob 150, Chi 120)</button>
-        <button id="btnAlice170" class="action primary">Update Alice = 170 qua A</button>
+        <button id="btnWriteAlice100" class="action">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <span>Ghi Alice = 100 qua A</span>
+        </button>
+        <button id="btnSeed3" class="action primary">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Seed 3 người chơi qua A (Alice 100, Bob 150, Chi 120)</span>
+        </button>
+        <button id="btnAlice170" class="action primary">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="16 12 12 8 8 12"/><line x1="12" y1="16" x2="12" y2="8"/></svg>
+          <span>Update Alice = 170 qua A</span>
+        </button>
       </div>
 
       <div class="control-block">
@@ -507,9 +568,18 @@
           Score:
           <input id="scoreInput" type="number" value="100" min="0" style="width: 90px;">
         </label>
-        <button id="btnPutCustom" class="action">Ghi điểm tùy chọn qua A</button>
-        <button id="btnReadA" class="action">Đọc từ A (/lab/a/...)</button>
-        <button id="btnReadB" class="action">Đọc từ B (/lab/b/...)</button>
+        <button id="btnPutCustom" class="action">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <span>Ghi điểm tùy chọn qua A</span>
+        </button>
+        <button id="btnReadA" class="action">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 17l4 4 4-4"/><path d="M12 12v9"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+          <span>Đọc từ A (/lab/a/...)</span>
+        </button>
+        <button id="btnReadB" class="action">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 17l4 4 4-4"/><path d="M12 12v9"/><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/></svg>
+          <span>Đọc từ B (/lab/b/...)</span>
+        </button>
       </div>
 
       <div id="lbErrorBanner" class="error-banner"></div>
@@ -517,7 +587,7 @@
       <div class="grid-2">
         <div class="card-sub">
           <div class="card-sub-head head-a">
-            <span>Backend A (<code>/lab/a</code>)</span>
+            <span style="display:inline-flex;align-items:center;gap:8px;"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>Backend A (<code>/lab/a</code>)</span>
             <span id="badgeReadA"></span>
           </div>
           <div class="card-sub-body">
@@ -537,7 +607,7 @@
 
         <div class="card-sub">
           <div class="card-sub-head head-b">
-            <span>Backend B (<code>/lab/b</code>)</span>
+            <span style="display:inline-flex;align-items:center;gap:8px;"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>Backend B (<code>/lab/b</code>)</span>
             <span id="badgeReadB"></span>
           </div>
           <div class="card-sub-body">
