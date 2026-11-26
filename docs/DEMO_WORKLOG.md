@@ -426,3 +426,38 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ### 6. Đối chiếu tiêu chí nghiệm thu
 - Giữ nguyên 8/10 tiêu chí đã `Đạt`; sẵn sàng cho bước quay 2 video dự phòng (tiêu chí 9).
+
+## Entry #11 — 2026-11-26 08:41 — Kiểm tra chất lượng video dự phòng Demo 1 (`docs/video/demo1.mp4`)
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Tài liệu & Video.
+- **Mục tiêu:** Kiểm tra thời lượng, diễn biến thao tác và đối chiếu tiêu chí của video Demo 1 do người phụ trách demo vừa quay tại `docs/video/demo1.mp4`.
+- **File kiểm tra:** `docs/video/demo1.mp4` (`66.64 MB`, thời lượng `93.05s` = `1 phút 33 giây`).
+
+### 2. Các thao tác đã thực hiện
+1. Kiểm tra metadata kích thước và thời lượng MP4 (`mvhd` atom).
+2. Xem toàn bộ nội dung hình ảnh video từ `00:00` đến `01:33` và đối chiếu với Mục 6 & Mục 12 trong `docs/ALB_ElastiCache_Demo_Handover.md` cùng Slide 5 trong `docs/ALB_ElastiCache_Noi_dung_chi_tiet.md`.
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS` (đạt các điểm cốt lõi; có 1 gợi ý bổ sung nhỏ).
+- **Diễn biến quan sát thật trong `demo1.mp4`:**
+  - `00:00–00:04`: Mở AWS Console `quizlab-tg-main` cho thấy `2 Total targets`, `2 Healthy`, `0 Unhealthy`.
+  - `00:05–00:22`: Mở web lab qua DNS ALB, bấm `Gửi 20 request (/api/whoami)` → `Tổng 20 | Backend A: 10 | Backend B: 10 | Lỗi: 0`, cuộn bảng cho thấy `requestId` thay đổi từng dòng.
+  - `00:27–00:34`: Sang terminal SSM chạy `sudo docker stop quizlab`.
+  - `00:35–00:46`: Refresh AWS Console `quizlab-tg-main` cho thấy chuyển từ `2 Healthy` sang `1 Healthy | 1 Unhealthy`.
+  - `00:49–01:02`: Bấm `Xóa bảng kết quả` rồi `Gửi 20 request` → `Tổng 20 | Backend A: 0 | Backend B: 20 | Lỗi: 0`.
+  - `01:08–01:13`: Sang terminal SSM chạy `sudo docker start quizlab`.
+  - `01:17–01:30`: Bấm `Gửi 1 request` 3 lần đầu thấy `B` (trong lúc A chưa kịp qua ngưỡng healthy), sau đó xóa bảng và bấm `Gửi 20 request` → `Tổng 20 | Backend A: 10 | Backend B: 10 | Lỗi: 0`.
+- **Điểm cần lưu ý / góp ý thêm:**
+  - Cuối video (`01:30`) chưa quay lại màn hình AWS Console refresh xác nhận `2 Healthy | 0 Unhealthy` (chỉ mới xác nhận A hồi phục qua web UI `10/10`); nên chụp thêm 1 ảnh Console `2 Healthy` hoặc lật lại Console ở cuối clip nếu muốn bằng chứng Tiêu chí 4 trọn vẹn hơn.
+  - File `docs/video/demo1.mp4` nặng `66.64 MB` (trên 50 MB, lưu ý khi push Git).
+
+### 4. Cách tự thực hiện lại / Bước tiếp theo
+- Nếu giữ nguyên `demo1.mp4`, bổ sung thêm ảnh chụp Console `2 Healthy` sau restart A cho Tiêu chí 4.
+- Tiếp tục quay `demo2.mp4` (≤ 3 phút) cho kịch bản **ElastiCache** và mở AWS Console `quizlab-valkey` ở cuối video.
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Video liền mạch (không cắt ghép), thời lượng `1m33s` gọn dưới mức tối đa `3m00s`. Trong video chờ A chuyển `unhealthy` ở Console xong mới bấm gửi 20 request nên không xuất hiện lỗi `502` chuyển tiếp trong phần quay này (vẫn đúng với mô tả *"Có thể có lỗi chuyển tiếp"*).
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Phục vụ Tiêu chí `9` (*Video dưới 3 phút cho từng demo*): đã có `demo1.mp4` (`1m33s`), còn thiếu `demo2.mp4`.
