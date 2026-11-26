@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cẩm nang Cloud Computing từ dự án ALB &amp; ElastiCache (Live Quiz Lab)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=Lora:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-outer: #EFE6D5;
+      --paper: #FBF5E6;
+      --paper-alt: #F2E7D1;
+      --ink: #181613;
+      --muted: #5C5347;
+      --orange: #F27127;
+      --yellow: #F5DF3D;
+      --cyan-soft: #E0F2F1;
+      --err-bg: #FDE4DF;
+      --err-ink: #9E1F14;
+      --err-border: #B82518;
+      --ok-bg: #E6F4EA;
+      --ok-ink: #175C2F;
+      --line: 1.5px solid #181613;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg-outer);
+      color: var(--ink);
+      font-family: "Be Vietnam Pro", system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    code, pre, .mono {
+      font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .ico {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.75;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .page-wrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px 18px 64px;
+    }
+
+    /* Hero */
+    .hero {
+      background: var(--paper);
+      border: var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .hero-top {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      border-bottom: var(--line);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .hero-top-cell {
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .hero-top-cell.right { justify-content: flex-end; }
+
+    .hero-brand {
+      padding: 10px 26px;
+      border-left: var(--line);
+      border-right: var(--line);
+      font-family: "Lora", Georgia, serif;
+      font-size: 19px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .hero-banner {
+      background: var(--yellow);
+      padding: 24px 26px;
+      border-bottom: var(--line);
+    }
+
+    .hero-banner h1 {
+      margin: 0 0 8px;
+      font-family: "Lora", Georgia, serif;
+      font-size: 30px;
+      line-height: 1.22;
+      font-weight: 700;
+    }
+
+    .hero-banner p {
+      margin: 0;
+      max-width: 820px;
+      font-size: 15px;
+    }
+
+    .hero-meta {
+      padding: 12px 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      background: var(--paper);
+      font-size: 12.5px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 11px;
+      border: var(--line);
+      border-radius: 999px;
+      background: var(--paper-alt);
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .pill.orange { background: var(--orange); }
+    .pill.yellow { background: var(--yellow); }
+
+    /* Sticky Nav */
+    .sticky-nav {
+      position: sticky;
+      top: 10px;
+      z-index: 30;
+      background: var(--paper);
+      border: var(--line);
+      border-radius: 12px;
+      padding: 8px 10px;
+      margin-bottom: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border: var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.12s ease;
+    }
+    .nav-link:hover { background: var(--paper-alt); }
+    .nav-link.active { background: var(--orange); font-weight: 700; }
+
+    /* Sections */
+    .section {
+      background: var(--paper);
+      border: var(--line);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 22px;
+      scroll-margin-top: 76px;
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+      border-bottom: var(--line);
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-family: "Lora", Georgia, serif;
+      font-size: 23px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    h3 {
+      font-family: "Lora", Georgia, serif;
+      font-size: 18px;
+      margin: 20px 0 8px;
+    }
+
+    p { margin: 0 0 12px; }
+
+    .callout {
+      padding: 14px 16px;
+      border: var(--line);
+      border-radius: 10px;
+      background: var(--paper-alt);
+      margin: 14px 0;
+    }
+    .callout.yellow { background: var(--yellow); }
+    .callout.err {
+      background: var(--err-bg);
+      color: var(--err-ink);
+      border-color: var(--err-border);
+    }
+    .callout.ok {
+      background: var(--ok-bg);
+      color: var(--ok-ink);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 14px 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 14px 0;
+    }
+
+    @media (max-width: 820px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .hero-top { grid-template-columns: 1fr; }
+      .hero-brand { border-left: none; border-right: none; border-top: var(--line); border-bottom: var(--line); text-align: center; }
+      .hero-top-cell.right { justify-content: flex-start; }
+    }
+
+    .card {
+      border: var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      overflow: hidden;
+    }
+
+    .card-head {
+      padding: 10px 14px;
+      border-bottom: var(--line);
+      background: var(--paper-alt);
+      font-weight: 700;
+      font-size: 14.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-head.yellow { background: var(--yellow); }
+    .card-head.orange { background: var(--orange); }
+
+    .card-body {
+      padding: 14px;
+      font-size: 14px;
+    }
+
+    .analogy {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border: 1px dashed #181613;
+      border-radius: 8px;
+      background: var(--paper-alt);
+      font-size: 13px;
+    }
+
+    /* Filter chips for glossary */
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .btn {
+      padding: 7px 14px;
+      border: var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:hover { background: var(--paper-alt); }
+    .btn.active { background: var(--orange); font-weight: 700; }
+    .btn.yellow { background: var(--yellow); font-weight: 700; }
+
+    /* Interactive Flow Explorer */
+    .flow-box {
+      border: var(--line);
+      border-radius: 12px;
+      background: var(--paper-alt);
+      padding: 16px;
+      margin-top: 14px;
+    }
+
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .step-item {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 12px 14px;
+      border: var(--line);
+      border-radius: 10px;
+      background: var(--paper);
+      cursor: pointer;
+      transition: background-color 0.12s ease;
+    }
+    .step-item.current {
+      background: var(--yellow);
+    }
+
+    .step-num {
+      width: 34px;
+      height: 34px;
+      border: var(--line);
+      border-radius: 999px;
+      background: var(--paper-alt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "IBM Plex Mono", monospace;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    .step-item.current .step-num {
+      background: var(--orange);
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      border: var(--line);
+      border-radius: 10px;
+      background: var(--paper);
+      margin: 12px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: var(--line);
+      border-right: var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th:last-child, td:last-child { border-right: none; }
+    tr:last-child td { border-bottom: none; }
+
+    th {
+      background: var(--paper-alt);
+      font-weight: 700;
+      font-size: 12.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* Accordion Q&A */
+    .qa-item {
+      border: var(--line);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      background: var(--paper);
+      overflow: hidden;
+    }
+
+    .qa-q {
+      width: 100%;
+      text-align: left;
+      padding: 12px 16px;
+      background: var(--paper-alt);
+      border: none;
+      border-bottom: 1px solid transparent;
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .qa-item.open .qa-q {
+      background: var(--yellow);
+      border-bottom: var(--line);
+    }
+    .qa-a {
+      display: none;
+      padding: 14px 16px;
+      font-size: 14px;
+      background: var(--paper);
+    }
+    .qa-item.open .qa-a { display: block; }
+
+    /* Code blocks */
+    pre.code-block {
+      margin: 10px 0;
+      padding: 12px 14px;
+      background: var(--ink);
+      color: var(--paper);
+      border: var(--line);
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .svg-diagram {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: var(--line);
+      border-radius: 12px;
+      background: var(--paper);
+      margin: 14px 0;
+    }
+
+    .lesson-badge {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border: var(--line);
+      border-radius: 999px;
+      background: var(--paper);
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <!-- HERO -->
+    <header class="hero">
+      <div class="hero-top">
+        <div class="hero-top-cell">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span>AWS SEMINAR STUDY GUIDE</span>
+        </div>
+        <div class="hero-brand">QuizLab Cloud Guide</div>
+        <div class="hero-top-cell right">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+          <span>10/10 TIÊU CHÍ ĐẠT</span>
+        </div>
+      </div>
+
+      <div class="hero-banner">
+        <h1>Hiểu trọn vẹn Cloud Computing qua dự án ALB &amp; ElastiCache</h1>
+        <p>
+          Tài liệu tổng hợp dành cho người mới bắt đầu học Cloud &amp; AWS: giải thích bằng ví dụ đời thường toàn bộ
+          <strong>khái niệm hạ tầng</strong>, <strong>5 luồng chạy thực tế</strong>, <strong>những điểm dễ hiểu nhầm</strong> và
+          <strong>7 bài học thật</strong> rút ra từ quá trình dựng lab đến lúc dọn sạch tài nguyên.
+        </p>
+      </div>
+
+      <div class="hero-meta">
+        <span class="pill yellow">Tình huống: Live Quiz nhiều backend</span>
+        <span class="pill orange">2 Dịch vụ chính: ALB + ElastiCache (Valkey)</span>
+        <span class="pill">Region chạy thật: ap-southeast-2 (Sydney)</span>
+        <span class="pill">Trạng thái AWS: Đã nghiệm thu &amp; cleanup 100%</span>
+      </div>
+    </header>
+
+    <!-- NAV -->
+    <nav class="sticky-nav" aria-label="Mục lục">
+      <a class="nav-link active" href="#sec-1">1. Khái niệm cốt lõi</a>
+      <a class="nav-link" href="#sec-2">2. Kiến trúc &amp; Luồng chạy</a>
+      <a class="nav-link" href="#sec-3">3. So sánh &amp; Dễ hiểu nhầm</a>
+      <a class="nav-link" href="#sec-4">4. Bài học thực chiến</a>
+      <a class="nav-link" href="#sec-5">5. Chi phí &amp; Tổng kết</a>
+    </nav>
+
+    <!-- SECTION 1: CONCEPTS -->
+    <section id="sec-1" class="section">
+      <div class="section-head">
+        <h2>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          Phần 1: Bài toán &amp; Các khái niệm Cloud cho người mới
+        </h2>
+        <span class="pill">Từ số 0 → Hiểu kiến trúc</span>
+      </div>
+
+      <div class="callout yellow">
+        <strong>Tại sao cần dự án này?</strong> Hãy tưởng tượng ứng dụng <em>Live Quiz</em> (như Kahoot) lúc đầu chỉ chạy trên 1 máy chủ. Khi nhiều người cùng chơi hoặc khi máy chủ đó bị lỗi, bạn mở thêm thành <strong>2 máy chủ (Backend A và Backend B)</strong>. Lập tức xuất hiện <strong>2 câu hỏi hoàn toàn độc lập</strong>:
+        <ol style="margin: 8px 0 0; padding-left: 20px;">
+          <li><strong>Cửa vào:</strong> Người chơi không thể nhớ IP của cả máy A lẫn máy B — cần 1 địa chỉ chung tự chia tải và né máy đang hỏng → <strong>Application Load Balancer (ALB)</strong>.</li>
+          <li><strong>Dữ liệu dùng chung:</strong> Nếu máy A lưu điểm của Alice trong RAM của riêng nó, thì khi request sau rơi vào máy B, máy B hoàn toàn không thấy điểm của Alice → <strong>Amazon ElastiCache (Valkey)</strong>.</li>
+        </ol>
+      </div>
+
+      <h3>Từ điển khái niệm Cloud (lọc theo lớp)</h3>
+      <div class="filter-row" id="glossaryFilters">
+        <button class="btn active" data-cat="all">Tất cả (10)</button>
+        <button class="btn" data-cat="network">Mạng &amp; Bảo mật</button>
+        <button class="btn" data-cat="compute">Máy chủ &amp; Vận hành</button>
+        <button class="btn" data-cat="alb">Load Balancer (ALB)</button>
+        <button class="btn" data-cat="cache">Cache (ElastiCache)</button>
+      </div>
+
+      <div class="grid-2" id="glossaryGrid">
+        <div class="card" data-cat="network">
+          <div class="card-head">
+            <span>1. Region &amp; Availability Zone (AZ)</span>
+            <span class="pill">Nền tảng</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Region</strong> là một khu vực địa lý (ví dụ <code>ap-southeast-1</code> là Singapore, <code>ap-southeast-2</code> là Sydney). Trong mỗi Region có nhiều <strong>Availability Zone (AZ)</strong> — là các cụm trung tâm dữ liệu tách biệt điện, mạng.</p>
+            <p>Trong dự án: Backend A đặt ở <code>ap-southeast-2a</code>, Backend B ở <code>ap-southeast-2b</code>.</p>
+            <div class="analogy"><strong>Ví dụ dễ hiểu:</strong> Region là một thành phố; AZ là các quận khác nhau trong thành phố đó. Đặt 2 chi nhánh ở 2 quận để lỡ 1 quận cúp điện thì chi nhánh kia vẫn phục vụ.</div>
+          </div>
+        </div>
+
+        <div class="card" data-cat="network">
+          <div class="card-head">
+            <span>2. VPC, Subnet Public/Private &amp; IGW</span>
+            <span class="pill">Mạng</span>
+          </div>
+          <div class="card-body">
+            <p><strong>VPC</strong> (Virtual Private Cloud) là mạng riêng ảo của riêng bạn trên AWS (dải IP <code>10.20.0.0/16</code>). Bên trong chia thành:</p>
+            <ul style="margin:0; padding-left:18px;">
+              <li><strong>Public Subnet:</strong> Có đường đi qua <strong>Internet Gateway (IGW)</strong> — dùng cho ALB nhận khách và cho EC2 tải gói Docker/kết nối SSM.</li>
+              <li><strong>Private Subnet:</strong> Không kết nối trực tiếp ra Internet — dùng giấu <strong>ElastiCache Valkey</strong> ở tầng trong cùng.</li>
+            </ul>
+            <div class="analogy"><strong>Ví dụ dễ hiểu:</strong> VPC là tòa nhà công ty. Public Subnet là sảnh lễ tân mặt tiền có cửa IGW ra đường phố; Private Subnet là phòng két sắt ở tầng hầm không có cửa thông ra đường.</div>
+          </div>
+        </div>
+
+        <div class="card" data-cat="network">
+          <div class="card-head">
+            <span>3. Security Group (SG) 3 lớp</span>
+            <span class="pill">Tường lửa</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Security Group</strong> là tường lửa ảo gắn vào từng thành phần, hoạt động theo nguyên tắc <em>mặc định chặn hết, chỉ mở đúng cổng và đúng nguồn cần thiết</em>:</p>
+            <ul style="margin:0; padding-left:18px;">
+              <li><code>SG ALB</code>: Chỉ mở port <code>80</code> (HTTP) cho IP máy trình diễn.</li>
+              <li><code>SG Backend</code>: Chỉ nhận port <code>3000</code> từ <code>SG ALB</code> (khóa port <code>22</code> SSH!).</li>
+              <li><code>SG Cache</code>: Chỉ nhận port <code>6379</code> từ <code>SG Backend</code>.</li>
+            </ul>
+            <div class="analogy"><strong>Ví dụ dễ hiểu:</strong> Bảo vệ vòng ngoài chỉ cho khách quen vào sảnh; bảo vệ phòng làm việc chỉ cho nhân viên từ sảnh đi qua; bảo vệ kho dữ liệu chỉ cho nhân viên phòng làm việc bước vào.</div>
+          </div>
+        </div>
+
+        <div class="card" data-cat="compute">
+          <div class="card-head">
+            <span>4. EC2 &amp; Docker Container</span>
+            <span class="pill">Máy chủ</span>
+          </div>
+          <div class="card-body">
+            <p><strong>EC2</strong> là máy chủ ảo trên đám mây (dùng 2 máy nhỏ <code>t3.micro</code> chạy Amazon Linux 2023). Trên mỗi máy chạy một <strong>Docker container</strong> tên <code>quizlab</code> chứa cùng 1 code Node.js 24, chỉ khác biến môi trường <code>BACKEND_ID=A</code> hay <code>B</code>.</p>
+            <p>Container cấu hình <code>--restart unless-stopped</code> để khi ta chủ động chạy <code>docker stop quizlab</code> mô phỏng sự cố, nó không tự khởi động lại ngay.</p>
+            <div class="analogy"><strong>Ví dụ dễ hiểu:</strong> EC2 là căn nhà thuê trên mây; Docker container là chiếc hộp đóng gói sẵn toàn bộ đồ đạc của app — mang sang nhà A hay nhà B đặt vào đều chạy y hệt nhau.</div>
+          </div>
+        </div>
+
+        <div class="card" data-cat="compute">
+          <div class="card-head">
+            <span>5. IAM Role &amp; AWS SSM Session Manager</span>
+            <span class="pill">Vận hành an toàn</span>
+          </div>
+          <div class="card-body">
+            <p><strong>IAM</strong> quản lý danh tính và quyền. Thay vì mở cổng SSH (port 22) nguy hiểm và giữ file khóa <code>.pem</code>, ta gắn cho EC2 một <strong>IAM Role</strong> (<code>AmazonSSMManagedInstanceCore</code>) để điều khiển từ xa qua <strong>SSM Session Manager</strong> (và gửi lệnh qua <code>aws ssm send-command</code>).</p>
+            <p>Ngoài ra, mật khẩu Valkey được mã hóa trong <strong>SSM Parameter Store (<code>SecureString</code>)</strong> để EC2 tự lấy về lưu ở <code>/etc/quizlab/env</code> (<code>chmod 600</code>).</p>
+          </div>
+        </div>
+
+        <div class="card" data-cat="alb">
+          <div class="card-head yellow">
+            <span>6. ALB, Listener &amp; Listener Rules</span>
+            <span class="pill">Cân bằng tải</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Application Load Balancer (ALB)</strong> làm việc ở tầng 7 (tầng HTTP/Ứng dụng), nghĩa là nó đọc được URL path, header, method của request.</p>
+            <ul style="margin:0; padding-left:18px;">
+              <li><strong>Listener (HTTP :80):</strong> Tai nghe tiếp nhận request đi vào ALB.</li>
+              <li><strong>Listener Rules (xét theo Priority tăng dần):</strong>
+                <br/>• Priority <code>10</code>: Path <code>/lab/a/*</code> → chuyển thẳng <code>tg-a</code> (chỉ A)
+                <br/>• Priority <code>20</code>: Path <code>/lab/b/*</code> → chuyển thẳng <code>tg-b</code> (chỉ B)
+                <br/>• Default: Còn lại → chuyển <code>tg-main</code> (cả A và B)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" data-cat="alb">
+          <div class="card-head yellow">
+            <span>7. Target Group &amp; Health Check</span>
+            <span class="pill">Giám sát sống/chết</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Target Group</strong> là đối tượng cấu hình gom nhóm các máy đích (A, B) kèm thuật toán chia tải (<code>round_robin</code>, tắt cookie stickiness).</p>
+            <p><strong>Health Check:</strong> Mỗi <strong>5 giây</strong>, ALB tự gửi <code>GET /health</code> tới port 3000. Nếu 2 lần liên tiếp không nhận được HTTP <code>200</code> (trong timeout 2s) → đánh dấu target là <strong><code>unhealthy</code></strong> và ngừng đưa request mới qua <code>tg-main</code> tới máy đó. Khi máy lên lại và đạt 2 lần <code>200</code> → chuyển về <strong><code>healthy</code></strong>.</p>
+          </div>
+        </div>
+
+        <div class="card" data-cat="cache">
+          <div class="card-head orange">
+            <span>8. Amazon ElastiCache &amp; Engine Valkey</span>
+            <span class="pill">Cache dùng chung</span>
+          </div>
+          <div class="card-body">
+            <p><strong>ElastiCache</strong> là dịch vụ AWS quản lý sẵn hạ tầng bộ nhớ đệm (cấp phát, vá lỗi, theo dõi). Bên trong chạy engine dữ liệu <strong>Valkey 8.2.0</strong> (tương thích API Redis, hỗ trợ cấu trúc mạnh như <strong>Sorted Set</strong>; khác Memcached không có Sorted Set).</p>
+            <p>Lab chọn mô hình <strong>Node-based</strong>, <em>Cluster mode disabled</em>, <strong>1 node primary (<code>cache.t4g.micro</code>) và 0 replica</strong> để giữ luồng ghi-đọc đơn giản, nhất quán ngay tức thì.</p>
+          </div>
+        </div>
+
+        <div class="card" data-cat="cache">
+          <div class="card-head orange">
+            <span>9. Sorted Set, TTL &amp; Eviction</span>
+            <span class="pill">Cấu trúc dữ liệu</span>
+          </div>
+          <div class="card-body">
+            <p>Key bảng điểm dùng tên <code>quizlab:room:demo:leaderboard</code>:</p>
+            <ul style="margin:0; padding-left:18px;">
+              <li><code>ZADD key score member</code>: Gán điểm tuyệt đối (cập nhật Alice = 170 thì tự sắp lại thứ hạng; bấm lại vẫn là 170, không cộng dồn như <code>ZINCRBY</code>).</li>
+              <li><code>ZRANGE key 0 9 REV WITHSCORES</code>: Lấy top 10 điểm cao nhất xuống thấp.</li>
+              <li><strong>TTL (<code>EXPIRE 3600</code>):</strong> Hạn tự hủy của cả key sau 3600s.</li>
+              <li><strong>Eviction:</strong> Việc cache tự xóa bớt key khi <em>đầy RAM</em> theo <code>maxmemory-policy</code> — khác với hết hạn TTL!</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" data-cat="cache">
+          <div class="card-head orange">
+            <span>10. TLS &amp; RBAC trong Valkey</span>
+            <span class="pill">Bảo mật dữ liệu</span>
+          </div>
+          <div class="card-body">
+            <p>Dù nằm trong Private Subnet, kết nối từ Backend A/B tới Valkey vẫn khóa 2 lớp:</p>
+            <ul style="margin:0; padding-left:18px;">
+              <li><strong>TLS (Encryption in transit):</strong> Mã hóa dữ liệu trên đường mạng (<code>rediss</code>).</li>
+              <li><strong>RBAC (Role-Based Access Control):</strong> Khóa hoàn toàn user <code>default</code> (<code>off -@all</code>); chỉ cấp cho user <code>quizlab</code> quyền chạy đúng các lệnh cần thiết trên key có tiền tố <code>~quizlab:*</code>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: ARCHITECTURE & INTERACTIVE FLOWS -->
+    <section id="sec-2" class="section">
+      <div class="section-head">
+        <h2>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg>
+          Phần 2: Sơ đồ kiến trúc &amp; 5 Luồng chạy trong dự án
+        </h2>
+        <span class="pill orange">Tương tác từng bước</span>
+      </div>
+
+      <p>Dưới đây là toàn bộ bức tranh hạ tầng đã triển khai thật tại <code>ap-southeast-2</code> (gồm 1 VPC, 4 subnet trên 2 AZ, 3 Security Groups, 2 EC2, 1 ALB với 3 Target Groups và 1 node ElastiCache Valkey):</p>
+
+      <!-- Crisp Inline SVG Architecture Diagram -->
+      <svg class="svg-diagram" viewBox="0 0 1000 370" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sơ đồ kiến trúc AWS ALB và ElastiCache">
+        <!-- VPC outer box -->
+        <rect x="210" y="16" width="770" height="338" rx="14" fill="#FBF5E6" stroke="#181613" stroke-width="2" stroke-dasharray="7 5"/>
+        <text x="230" y="42" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700" fill="#181613">VPC: quizlab-vpc (10.20.0.0/16) — ap-southeast-2</text>
+
+        <!-- Public Subnets box -->
+        <rect x="230" y="58" width="470" height="276" rx="12" fill="#F2E7D1" stroke="#181613" stroke-width="1.5"/>
+        <text x="246" y="80" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700" fill="#181613">2 PUBLIC SUBNETS (AZ 2a &amp; 2b) + Internet Gateway</text>
+
+        <!-- Private Subnets box -->
+        <rect x="720" y="58" width="240" height="276" rx="12" fill="#EFE6D5" stroke="#181613" stroke-width="1.5"/>
+        <text x="734" y="80" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700" fill="#181613">2 PRIVATE SUBNETS</text>
+
+        <!-- Browser / User -->
+        <rect x="20" y="130" width="155" height="96" rx="12" fill="#FBF5E6" stroke="#181613" stroke-width="2"/>
+        <text x="97" y="164" text-anchor="middle" font-family="Lora, serif" font-size="16" font-weight="700" fill="#181613">Trình duyệt</text>
+        <text x="97" y="185" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#5C5347">IP người trình diễn</text>
+        <text x="97" y="205" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#181613">HTTP :80 (no-store)</text>
+
+        <!-- ALB -->
+        <rect x="250" y="112" width="165" height="140" rx="12" fill="#F5DF3D" stroke="#181613" stroke-width="2"/>
+        <text x="332" y="138" text-anchor="middle" font-family="Lora, serif" font-size="16" font-weight="700" fill="#181613">ALB</text>
+        <text x="332" y="157" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#181613">SG ALB (port 80)</text>
+        <line x1="262" y1="168" x2="403" y2="168" stroke="#181613" stroke-width="1"/>
+        <text x="332" y="186" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#181613">/lab/a/* → tg-a</text>
+        <text x="332" y="206" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#181613">/lab/b/* → tg-b</text>
+        <text x="332" y="226" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" font-weight="700" fill="#181613">Default → tg-main</text>
+
+        <!-- EC2 A -->
+        <rect x="475" y="98" width="205" height="92" rx="12" fill="#FBF5E6" stroke="#181613" stroke-width="2"/>
+        <text x="577" y="124" text-anchor="middle" font-family="Lora, serif" font-size="15" font-weight="700" fill="#181613">EC2 A (t3.micro)</text>
+        <text x="577" y="144" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#181613">AZ: 2a | Port :3000</text>
+        <text x="577" y="162" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5C5347">Docker quizlab | RAM Map A</text>
+        <text x="577" y="179" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5C5347">SSM Session Manager</text>
+
+        <!-- EC2 B -->
+        <rect x="475" y="214" width="205" height="92" rx="12" fill="#FBF5E6" stroke="#181613" stroke-width="2"/>
+        <text x="577" y="240" text-anchor="middle" font-family="Lora, serif" font-size="15" font-weight="700" fill="#181613">EC2 B (t3.micro)</text>
+        <text x="577" y="260" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#181613">AZ: 2b | Port :3000</text>
+        <text x="577" y="278" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5C5347">Docker quizlab | RAM Map B</text>
+        <text x="577" y="295" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#5C5347">SG Backend (chỉ từ SG ALB)</text>
+
+        <!-- ElastiCache Valkey -->
+        <rect x="742" y="128" width="198" height="144" rx="12" fill="#F27127" stroke="#181613" stroke-width="2"/>
+        <text x="841" y="158" text-anchor="middle" font-family="Lora, serif" font-size="16" font-weight="700" fill="#181613">ElastiCache Valkey</text>
+        <text x="841" y="179" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#181613">cache.t4g.micro (8.2.0)</text>
+        <text x="841" y="198" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#181613">1 Primary | 0 Replica</text>
+        <text x="841" y="218" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#181613">TLS :6379 + RBAC</text>
+        <text x="841" y="238" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="#181613">Key: quizlab:room:*</text>
+        <text x="841" y="258" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#181613">SG Cache (chỉ từ Backend)</text>
+
+        <!-- Arrows -->
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#181613"/>
+          </marker>
+        </defs>
+        <line x1="175" y1="178" x2="246" y2="178" stroke="#181613" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="415" y1="158" x2="471" y2="144" stroke="#181613" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="415" y1="210" x2="471" y2="255" stroke="#181613" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="680" y1="144" x2="738" y2="180" stroke="#181613" stroke-width="2" marker-end="url(#arr)"/>
+        <line x1="680" y1="260" x2="738" y2="220" stroke="#181613" stroke-width="2" marker-end="url(#arr)"/>
+      </svg>
+
+      <h3>Chọn một luồng để xem từng bước hoạt động</h3>
+      <div class="filter-row" id="flowTabs">
+        <button class="btn active" data-flow="flow1">Luồng 1: Phân phối ALB (bình thường)</button>
+        <button class="btn" data-flow="flow2">Luồng 2: Dừng A &amp; Failover (Demo 1)</button>
+        <button class="btn" data-flow="flow3">Luồng 3: Strip Prefix &amp; RAM riêng</button>
+        <button class="btn" data-flow="flow4">Luồng 4: Shared Leaderboard (Demo 2)</button>
+        <button class="btn" data-flow="flow5">Luồng 5: Deploy &amp; Bảo mật Secret</button>
+      </div>
+
+      <div class="flow-box" id="flowContainer"></div>
+    </section>
+
+    <!-- SECTION 3: MISCONCEPTIONS & Q&A -->
+    <section id="sec-3" class="section">
+      <div class="section-head">
+        <h2>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Phần 3: Phân biệt khái niệm dễ hiểu nhầm &amp; Q&amp;A Seminar
+        </h2>
+        <span class="pill">Giữ kết luận trung thực</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Hay bị nhầm thành...</th>
+              <th>Sự thật kỹ thuật trên AWS</th>
+              <th>Phạm vi trong Lab này</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ALB tự mở thêm EC2 khi đông người</strong></td>
+              <td>ALB tự mở rộng chính nó, nhưng <strong>không tạo thêm EC2</strong>. Tăng số backend phải dùng EC2 Auto Scaling hoặc scaling của Kubernetes/ECS.</td>
+              <td>Lab cố định 2 EC2 A và B (không demo Auto Scaling).</td>
+            </tr>
+            <tr>
+              <td><strong>Bật Sticky Session là đủ giữ điểm ở A</strong></td>
+              <td>Cookie stickiness chỉ ghim người dùng quay lại A khi A còn sống; nó <strong>không sao chép RAM của A sang B</strong>. Khi A chết, dữ liệu RAM vẫn mất.</td>
+              <td><code>tg-main</code> tắt stickiness để thấy rõ phân phối A/B.</td>
+            </tr>
+            <tr>
+              <td><strong>A chết thì WebSocket đang mở tự nhảy sang B</strong></td>
+              <td>WebSocket là kết nối TCP giữ chặt với 1 target sau HTTP Upgrade. A chết thì socket đứt; client phải <strong>reconnect</strong> và app phải hỗ trợ <strong>rejoin phòng</strong>.</td>
+              <td>Demo 1 chỉ thử HTTP <code>/api/whoami</code>, không chứng minh phục hồi WebSocket.</td>
+            </tr>
+            <tr>
+              <td><strong>Health Check <code>5s × 2 = 10s</code> là cố định</strong></td>
+              <td>Tiến trình có thể dừng vào bất kỳ thời điểm nào trong chu kỳ 5s, và có trễ truyền/xử lý. Trong vài giây đầu trước khi A <code>unhealthy</code>, request vẫn có thể dính <code>HTTP 502</code>.</td>
+              <td>3 lần đo thật ở lab ghi nhận: <code>9.02s</code>, <code>13.16s</code>, <code>7.29s</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>Restart A không mất cache = Cache có độ bền</strong></td>
+              <td>Điều đó chỉ chứng minh dữ liệu sống tách khỏi tiến trình A <em>khi node cache còn sống</em>. Độ bền trước sự cố node cache đòi hỏi Multi-AZ replica, snapshot, hoặc transactional log durability.</td>
+              <td>Lab chỉ dùng 1 primary / 0 replica (chưa thử cache failover).</td>
+            </tr>
+            <tr>
+              <td><strong>Đặt TTL 3600s là key chắc chắn sống đủ 1 giờ</strong></td>
+              <td>Nếu bộ nhớ Valkey đầy và <code>maxmemory-policy</code> cho phép <strong>Eviction</strong> (như <code>allkeys-lru</code>), key còn hạn TTL vẫn có thể bị đẩy ra sớm.</td>
+              <td>Dữ liệu gốc bền vững của Live Quiz thật vẫn cần nằm ở DB (như PostgreSQL).</td>
+            </tr>
+            <tr>
+              <td><strong><code>store=elasticache</code> lỗi thì fallback tạm về RAM</strong></td>
+              <td>Fallback ngầm làm người dùng/người xem hiểu lầm hệ thống đang chia sẻ dữ liệu trong khi thực chất không phải.</td>
+              <td>Lab bắt buộc trả lỗi thật <code>HTTP 503</code> nếu mất kết nối Valkey.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Câu hỏi thường gặp khi trình bày (bấm để xem đáp án)</h3>
+      <div id="qaList">
+        <div class="qa-item open">
+          <button class="qa-q">
+            <span>1. Tại sao dùng Amazon ElastiCache nếu tự cài Redis trên máy cũng có Sorted Set?</span>
+            <span>−</span>
+          </button>
+          <div class="qa-a">
+            Sorted Set là tính năng của engine (Valkey/Redis). Lý do dùng ElastiCache là phần <strong>dịch vụ managed của AWS</strong>: tự cấp phát hạ tầng mạng VPC riêng, TLS/RBAC tích hợp, vá lỗi hệ điều hành/engine, giám sát CloudWatch, và các tùy chọn nâng cấp lên Multi-AZ replica, backup/restore hay Serverless khi hệ thống lớn lên.
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <button class="qa-q">
+            <span>2. Demo đã chứng minh ElastiCache nhanh hơn PostgreSQL bao nhiêu lần chưa?</span>
+            <span>+</span>
+          </button>
+          <div class="qa-a">
+            <strong>Chưa.</strong> Lab chỉ so sánh giữa <em>RAM riêng từng tiến trình</em> (<code>store=memory</code>) và <em>cache dùng chung</em> (<code>store=elasticache</code>), hoàn toàn không dựng PostgreSQL hay chạy bài đo benchmark cùng workload/latency nên không được kết luận hệ số tăng tốc so với DB.
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <button class="qa-q">
+            <span>3. Reader endpoint của ElastiCache có giống ALB đứng trước các replica không?</span>
+            <span>+</span>
+          </button>
+          <div class="qa-a">
+            <strong>Không giống.</strong> Reader endpoint ở mô hình node-based là bản ghi DNS phân giải luân phiên tới các replica khi mở kết nối mới, không phải proxy phân phối lại từng lệnh trên một kết nối TCP đã giữ lâu trong pool. Ngoài ra đọc từ replica có thể bị trễ (replication lag), nên lab đọc/ghi trên cùng 1 node primary để thấy điểm ngay tức thì.
+          </div>
+        </div>
+
+        <div class="qa-item">
+          <button class="qa-q">
+            <span>4. Nếu cả A và B cùng chết trong <code>tg-main</code> thì ALB làm gì?</span>
+            <span>+</span>
+          </button>
+          <div class="qa-a">
+            ALB có cơ chế <strong>fail open</strong>: khi toàn bộ target trong Target Group đều <code>unhealthy</code>, ALB sẽ không chặn hết mà thử định tuyến lưu lượng qua lại cho cả các target đang <code>unhealthy</code> đó (và người dùng nhận lỗi từ backend/ALB). Vì vậy trong demo chỉ dừng 1 máy A và giữ B khỏe.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: REAL LESSONS LEARNED -->
+    <section id="sec-4" class="section">
+      <div class="section-head">
+        <h2>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>
+          Phần 4: 7 Bài học thực chiến từ chính quá trình làm dự án
+        </h2>
+        <span class="pill orange">Đúc kết từ Worklog #1 → #14</span>
+      </div>
+
+      <p>Đây là toàn bộ những lỗi thật, vướng mắc thật và kinh nghiệm kỹ thuật đã gặp khi triển khai dự án từ con số 0:</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head yellow">
+            <span>Bài học 1: Kiểm tra quyền &amp; SCP ngay giờ đầu tiên</span>
+            <span class="lesson-badge">Entry #5</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Chuyện gì xảy ra:</strong> Tài liệu gợi ý Singapore (<code>ap-southeast-1</code>), nhưng khi chạy lệnh kiểm tra, tài khoản dù có <code>AdministratorAccess</code> vẫn bị chặn bởi <strong>Service Control Policy (SCP <code>p-3qq7zdmg</code>)</strong> của AWS Organization.</p>
+            <p><strong>Bài học:</strong> Trong AWS, <em>Explicit Deny ở SCP mạnh hơn cả quyền Admin</em>. Nhờ kiểm tra quyền trước khi triển khai, ta quét các region và chuyển sang <code>ap-southeast-2</code> (Sydney) được phép hoàn toàn ngay từ đầu.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head yellow">
+            <span>Bài học 2: Ràng buộc RBAC của Valkey &amp; Handshake của thư viện</span>
+            <span class="lesson-badge">Entry #3, #5</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Chuyện gì xảy ra:</strong> Tạo RBAC user <code>default</code> cho Valkey với cờ <code>--no-password-required</code> bị AWS từ chối (<code>InvalidParameterCombination</code>). Ngoài ra thư viện Node.js <code>ioredis</code> mặc định gửi lệnh <code>INFO</code> khi khởi tạo.</p>
+            <p><strong>Bài học:</strong> Phải tạo user <code>default</code> có password ngẫu nhiên kèm quyền <code>off -@all</code>; đồng thời cấu hình <code>ioredis</code> với <code>enableReadyCheck: false</code> (bỏ <code>INFO</code>) và <code>enableOfflineQueue: false</code> (mất kết nối là trả <code>503</code> ngay, không treo chờ).</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span>Bài học 3: Xử lý sự cố lộ secret trong log &amp; Xoay mật khẩu ngay</span>
+            <span class="lesson-badge">Entry #5</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Chuyện gì xảy ra:</strong> Lệnh <code>aws ssm put-parameter</code> lúc đầu truyền chung <code>--overwrite</code> và <code>--tags</code> bị AWS báo lỗi, khiến Python traceback in lộ chuỗi mật khẩu tạm ra log lỗi.</p>
+            <p><strong>Bài học:</strong> Không truyền password làm tham số CLI trong hàm dễ ném traceback; tách riêng <code>put-parameter</code> và <code>add-tags-to-resource</code>. Khi lỡ lộ dù chỉ ở log local, lập tức <strong>xoay mật khẩu Valkey mới</strong> (<code>modify-user</code>) và dùng <code>subprocess.run</code> ẩn stderr nhạy cảm.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span>Bài học 4: Số cấu hình ≠ Số đo thực tế khi sự cố</span>
+            <span class="lesson-badge">Entry #5, #11</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Chuyện gì xảy ra:</strong> Health check cấu hình 5 giây/lần, 2 lần lỗi = lý thuyết 10 giây. Nhưng khi chạy thật 3 lần liên tiếp, thời gian A chuyển <code>unhealthy</code> lần lượt là <strong><code>9.02s</code></strong>, <strong><code>13.16s</code></strong> và <strong><code>7.29s</code></strong> — kèm lỗi <code>HTTP 502</code> ở giây thứ 2 và giây thứ 5.</p>
+            <p><strong>Bài học:</strong> Không bao giờ lấy thông số cấu hình nhân lên làm cam kết SLA; khi demo phải để nguyên diễn biến lỗi chuyển tiếp thật để người xem hiểu bản chất health check theo chu kỳ.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span>Bài học 5: Bắt tín hiệu <code>SIGTERM</code> để Docker dừng nhanh</span>
+            <span class="lesson-badge">Entry #3</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Chuyện gì xảy ra:</strong> Mặc định Node.js không tự đóng các kết nối keep-alive khi nhận <code>SIGTERM</code>, khiến lệnh <code>docker stop quizlab</code> bị đứng chờ đủ 10 giây mới cưỡng chế tắt (<code>SIGKILL</code>).</p>
+            <p><strong>Bài học:</strong> Viết handler bắt <code>SIGTERM</code>/<code>SIGINT</code> gọi <code>server.close()</code> và <code>redisClient.disconnect()</code> giúp <code>docker stop</code> kết thúc trong chưa tới 1 giây — cực kỳ quan trọng cho kịch bản demo 3 phút.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span>Bài học 6: Giao diện tiếng Việt, IP động &amp; HTTP vs HTTPS</span>
+            <span class="lesson-badge">Entry #7, #9, #10</span>
+          </div>
+          <div class="card-body">
+            <p><strong>Chuyện gì xảy ra:</strong> Font mặc định thiếu glyph tiếng Việt làm vỡ dấu; tắt máy mở lại hôm sau bị đổi public IP nên <code>SG ALB</code> chặn; trình duyệt đôi khi tự đổi <code>http://</code> thành <code>https://</code>.</p>
+            <p><strong>Bài học:</strong> Chọn font có xác nhận subset <code>vietnamese</code> (<code>Lora</code>, <code>IBM Plex Mono</code>, <code>Be Vietnam Pro</code>), dùng icon SVG nội tuyến gọn nhẹ, gửi <code>Cache-Control: no-store</code> + cache buster <code>_t=</code>, và kiểm tra rule IP mỗi buổi trình diễn.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout err" style="margin-top: 16px;">
+        <strong>Bài học 7 (Entry #13) — Luôn hậu kiểm tài khoản AWS sau khi chạy script Cleanup!</strong><br/>
+        Khi người dùng chạy <code>./cleanup-aws.sh --yes</code>, toàn bộ tài nguyên tính phí đã được xóa sạch, nhưng <code>vpc-0ef86bf0b601de975</code> vẫn kẹt lại do trong script bị thiếu 1 chữ số <code>9</code> ở cuối ID route table (<code>rtb-02a64f7cdd79309b9</code>). Chỉ nhờ chạy bước hậu kiểm (<code>describe-vpcs</code>, <code>describe-instances</code>, <code>describe-volumes</code>, <code>describe-addresses</code>...) mới phát hiện kịp và xóa dứt điểm, đồng thời sửa script đọc từ <code>.deploy-state.env</code> để các lần sau không bao giờ bị lệch ID.
+      </div>
+    </section>
+
+    <!-- SECTION 5: COST & PROJECT SUMMARY -->
+    <section id="sec-5" class="section">
+      <div class="section-head">
+        <h2>
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          Phần 5: Chi phí Cloud &amp; Tổng kết nghiệm thu dự án
+        </h2>
+        <span class="pill">FinOps &amp; Nghiệm thu</span>
+      </div>
+
+      <h3>Các thành phần tính phí của một môi trường lab thật (<code>ap-southeast-2</code>)</h3>
+      <p>
+        Trên Cloud, <strong>tắt EC2 (Stop) không đồng nghĩa dừng tính phí toàn bộ hệ thống</strong> — vì ALB, ElastiCache node, ổ cứng EBS và địa chỉ IPv4 công cộng vẫn chạy đồng hồ tính tiền từng giờ cho tới khi bạn xóa hẳn (Terminate / Delete).
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tài nguyên</th>
+              <th>Cấu hình Lab</th>
+              <th>Chiều tính phí AWS (tham khảo <code>ap-southeast-2</code>)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>ALB</strong> (<code>quizlab-alb</code>)</td>
+              <td>Internet-facing, HTTP :80</td>
+              <td>Phí cố định theo giờ (~<code>$0.0252/h</code>) + phí lưu lượng <strong>LCU</strong> (~<code>$0.008/LCU-h</code> theo kết nối mới, kết nối mở, bytes, rule)</td>
+            </tr>
+            <tr>
+              <td><strong>2 × EC2</strong> (<code>A</code> &amp; <code>B</code>)</td>
+              <td><code>t3.micro</code> Linux</td>
+              <td>Tính theo giờ máy chạy (~<code>$0.0132/h × 2 ≈ $0.0264/h</code>)</td>
+            </tr>
+            <tr>
+              <td><strong>Public IPv4 &amp; EBS</strong></td>
+              <td>2 IP gắn EC2 + 2 × 8 GB <code>gp3</code></td>
+              <td>Public IPv4 ~<code>$0.005/IP/h</code> (~<code>$0.010/h</code> cho 2 EC2) + EBS <code>gp3</code> ~<code>$0.096/GB-tháng</code></td>
+            </tr>
+            <tr>
+              <td><strong>ElastiCache Valkey</strong></td>
+              <td>1 × <code>cache.t4g.micro</code></td>
+              <td>Tính theo giờ node chạy (~<code>$0.0128/h</code>)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout ok">
+        <strong>Tổng kết dự án:</strong> Toàn bộ <strong>10/10 tiêu chí nghiệm thu</strong> đã đạt (hạ tầng chạy thật tại <code>ap-southeast-2</code>, kiểm thử lặp 3 lần qua API, quay 2 video dự phòng <code>docs/video/demo1.mp4</code> 1m33s &amp; <code>docs/demo2.mp4</code> 2m13s, tạo sẵn <code>deploy-aws.sh</code> và dọn sạch 100% tài nguyên qua <code>cleanup-aws.sh</code>). Chi phí toàn lab trong vài giờ thử nghiệm chỉ khoảng dưới vài chục cent USD nhờ dọn tài nguyên ngay khi xong.
+      </div>
+
+      <h3>Các file quan trọng trong repo để tra cứu nhanh</h3>
+      <ul style="margin:0; padding-left:20px;">
+        <li><code>AGENTS.md</code> — Quy tắc bắt buộc ghi nhật ký, bảo mật secret và chuẩn kỹ thuật.</li>
+        <li><code>docs/DEMO_WORKLOG.md</code> — Nhật ký triển khai chi tiết (Entries #1–#15) + Runbook tự dựng &amp; tự chạy demo.</li>
+        <li><code>docs/ACCEPTANCE_REPORT.md</code> — Biên bản nghiệm thu 10/10 tiêu chí với số đo thật.</li>
+        <li><code>docs/AWS_CONFIG_COST_CLEANUP.md</code> — Sơ đồ, Resource IDs, chi phí và hướng dẫn dọn tài nguyên.</li>
+        <li><code>seminar-lab/alb-elasticache/</code> — Mã nguồn app (<code>src/server.js</code>, <code>public/index.html</code>, <code>Dockerfile</code>), <code>deploy-aws.sh</code>, <code>cleanup-aws.sh</code>.</li>
+      </ul>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      // 1. Glossary category filter
+      const filterBtns = document.querySelectorAll('#glossaryFilters .btn');
+      const cards = document.querySelectorAll('#glossaryGrid .card');
+      filterBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          filterBtns.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          const cat = btn.dataset.cat;
+          cards.forEach((card) => {
+            if (cat === 'all' || card.dataset.cat === cat) {
+              card.classList.remove('hidden');
+            } else {
+              card.classList.add('hidden');
+            }
+          });
+        });
+      });
+
+      // 2. Interactive Flow Explorer
+      const flows = {
+        flow1: {
+          title: 'Luồng 1: Request bình thường qua ALB (Round Robin)',
+          summary: 'Client gọi 1 DNS duy nhất của ALB. Không cần biết IP của EC2 A hay B.',
+          steps: [
+            ['Trình duyệt gửi HTTP GET /api/whoami', 'Kèm header Cache-Control: no-store và tham số ?_t=... để không đọc bản lưu tạm của trình duyệt.'],
+            ['SG ALB kiểm tra IP nguồn', 'Chỉ cho phép TCP port 80 nếu IP nằm trong danh sách cho phép (IP của người trình diễn).'],
+            ['Listener 80 khớp Default Rule → tg-main', 'Vì đường dẫn không bắt đầu bằng /lab/a/ hay /lab/b/, ALB chuyển tới Target Group tg-main (cả A và B đều healthy).'],
+            ['tg-main chọn A hoặc B theo Round Robin', 'Lượt 1 có thể sang EC2 A, lượt 2 sang EC2 B (tắt cookie stickiness).'],
+            ['App trả JSON {backendId, requestId, timestamp}', 'Mỗi request nhận một requestId UUID mới để chứng minh đây là phản hồi thật từ máy A hoặc B.']
+          ]
+        },
+        flow2: {
+          title: 'Luồng 2: Dừng Backend A, ALB tự né máy lỗi & Khôi phục (Demo 1)',
+          summary: 'Chứng minh cơ chế Health Check theo chu kỳ và tách biệt giữa phát hiện lỗi với chuyển tiếp tức thì.',
+          steps: [
+            ['Chạy sudo docker stop quizlab qua AWS SSM', 'Dừng thật tiến trình HTTP trên EC2 A (không giả lập, không mở SSH port 22).'],
+            ['Khoảng trễ vài giây đầu (có thể thấy HTTP 502)', 'Vì Health Check kiểm tra định kỳ mỗi 5 giây (unhealthy threshold = 2), trong ~7–13 giây đầu trước khi đủ 2 lần thất bại, ALB vẫn có thể gửi request vào A và trả lỗi 502 thật.'],
+            ['ALB đánh dấu A = unhealthy (đo thật: 7.29s – 13.16s)', 'Sau 2 lần GET /health thất bại liên tiếp, tg-main loại A ra khỏi danh sách nhận tải.'],
+            ['20/20 request tiếp theo do Backend B xử lý', 'B vẫn healthy nên phục vụ 100% request mới qua đường mặc định mà không lỗi.'],
+            ['Chạy sudo docker start quizlab trên EC2 A', 'Sau ~7–8 giây vượt qua 2 lần kiểm tra GET /health = 200, A quay lại healthy và chia tải cùng B.']
+          ]
+        },
+        flow3: {
+          title: 'Luồng 3: Tự Strip Prefix & Thất bại chia sẻ nếu lưu RAM (store=memory)',
+          summary: 'Giải thích tại sao đường /lab/a/* chỉ định tuyến mà không tự cắt URL, và giới hạn của RAM cục bộ.',
+          steps: [
+            ['Client gọi PUT /lab/a/api/rooms/demo/scores/alice?store=memory', 'ALB khớp Rule Priority 10 (/lab/a/*) → ép request đi vào tg-a (chỉ chứa EC2 A).'],
+            ['Backend A tự cắt bỏ prefix /lab/a', 'ALB chỉ làm nhiệm vụ forward (chưa bật URL rewrite), nên src/server.js tự cắt /lab/a để khớp route /api/rooms/...'],
+            ['EC2 A lưu {alice: 100} vào biến Map trong RAM của nó', 'Dữ liệu chỉ nằm trong bộ nhớ của tiến trình Node.js trên máy A.'],
+            ['Client gọi GET /lab/b/api/rooms/demo/leaderboard?store=memory', 'ALB khớp Rule Priority 20 → ép request sang EC2 B.'],
+            ['EC2 B trả về mảng rỗng []', 'Dù A và B chạy cùng code Docker, chúng là 2 máy ảo khác nhau — B không thể đọc RAM của A.']
+          ]
+        },
+        flow4: {
+          title: 'Luồng 4: Chia sẻ bảng điểm qua ElastiCache Valkey (Demo 2)',
+          summary: 'Đưa trạng thái ra ngoài tiến trình backend bằng Sorted Set qua TLS + RBAC.',
+          steps: [
+            ['Seed qua A: PUT /lab/a/...?store=elasticache', 'EC2 A tái sử dụng 1 kết nối ioredis (TLS + RBAC user quizlab) gửi ZADD quizlab:room:demo:leaderboard 100 alice 150 bob 120 chi và EXPIRE 3600.'],
+            ['Đọc qua B: GET /lab/b/...?store=elasticache', 'EC2 B gửi ZRANGE quizlab:room:demo:leaderboard 0 9 REV WITHSCORES tới cùng node primary Valkey → nhận ngay Bob (150), Chi (120), Alice (100).'],
+            ['Cập nhật Alice = 170 qua A (gán đè tuyệt đối)', 'ZADD cập nhật điểm Alice lên 170 (nếu bấm lại vẫn giữ 170, không cộng dồn). B đọc lại thấy Alice lên hạng 1.'],
+            ['Dừng EC2 A (sudo docker stop quizlab)', 'Đọc từ A báo lỗi thật HTTP 502; nhưng đọc qua B vẫn thấy đủ bảng điểm vì dữ liệu nằm trên Valkey, không nằm trong A.'],
+            ['Bật lại EC2 A & đọc lại qua A', 'A khởi động lại, nối lại kết nối TLS tới Valkey và đọc được nguyên vẹn bảng điểm. (Lưu ý: nếu mất kết nối Valkey, app trả HTTP 503 chứ không fallback về RAM).']
+          ]
+        },
+        flow5: {
+          title: 'Luồng 5: Quy trình Deploy không SSH & Bảo mật Secret',
+          summary: 'Cách dự án đẩy code và truyền mật khẩu Valkey an toàn mà không lộ trong Git hay Docker image.',
+          steps: [
+            ['Đóng gói code sạch ở local', 'Chỉ nén src/, public/, package.json, Dockerfile, .dockerignore thành file .tar.gz (~11 KB); bỏ qua node_modules và file .env.'],
+            ['Lưu mật khẩu vào SSM Parameter Store (SecureString)', 'Mật khẩu Valkey được mã hóa bằng KMS trong /quizlab/valkey_password; không bao giờ commit vào Git hay ghi vào file worklog.'],
+            ['Gửi gói code qua aws ssm send-command (Base64)', 'Chuyển file .tar.gz sang chuỗi text Base64 gửi qua kênh SSM tới EC2 A & B, bên nhận giải mã base64 -d và giải nén vào /opt/quizlab.'],
+            ['EC2 tự lấy mật khẩu về /etc/quizlab/env (chmod 600)', 'EC2 dùng IAM Role gọi ssm:GetParameter --with-decryption ghi ra file env riêng trên máy chủ, không bake vào Docker image.'],
+            ['Build & chạy container quizlab', 'Docker build trên EC2 và chạy với --env-file /etc/quizlab/env --restart unless-stopped, kiểm tra /health và /api/cache-status qua ALB.']
+          ]
+        }
+      };
+
+      const flowTabs = document.querySelectorAll('#flowTabs .btn');
+      const flowContainer = document.getElementById('flowContainer');
+      let currentFlowKey = 'flow1';
+      let currentStepIdx = 0;
+
+      function renderFlow() {
+        const flow = flows[currentFlowKey];
+        const stepsHtml = flow.steps
+          .map((s, idx) => {
+            const activeCls = idx === currentStepIdx ? ' current' : '';
+            return `<div class="step-item${activeCls}" data-step="${idx}">
+              <div class="step-num">${idx + 1}</div>
+              <div>
+                <strong>${s[0]}</strong>
+                <div style="margin-top:4px; font-size:13.5px; color:#2b2722;">${s[1]}</div>
+              </div>
+            </div>`;
+          })
+          .join('');
+
+        flowContainer.innerHTML = `
+          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px;">
+            <div>
+              <strong style="font-family:'Lora',serif; font-size:18px;">${flow.title}</strong>
+              <div style="font-size:13.5px; color:var(--muted); margin-top:2px;">${flow.summary}</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn" id="prevStepBtn">← Bước trước</button>
+              <button class="btn yellow" id="nextStepBtn">Bước tiếp theo →</button>
+            </div>
+          </div>
+          <div class="flow-steps">${stepsHtml}</div>
+        `;
+
+        flowContainer.querySelectorAll('.step-item').forEach((el) => {
+          el.addEventListener('click', () => {
+            currentStepIdx = Number(el.dataset.step);
+            renderFlow();
+          });
+        });
+
+        document.getElementById('prevStepBtn').addEventListener('click', () => {
+          currentStepIdx = (currentStepIdx - 1 + flow.steps.length) % flow.steps.length;
+          renderFlow();
+        });
+
+        document.getElementById('nextStepBtn').addEventListener('click', () => {
+          currentStepIdx = (currentStepIdx + 1) % flow.steps.length;
+          renderFlow();
+        });
+      }
+
+      flowTabs.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          flowTabs.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFlowKey = btn.dataset.flow;
+          currentStepIdx = 0;
+          renderFlow();
+        });
+      });
+
+      renderFlow();
+
+      // 3. Accordion Q&A
+      document.querySelectorAll('.qa-q').forEach((qBtn) => {
+        qBtn.addEventListener('click', () => {
+          const item = qBtn.closest('.qa-item');
+          const isOpen = item.classList.contains('open');
+          item.classList.toggle('open', !isOpen);
+          qBtn.lastElementChild.textContent = isOpen ? '+' : '−';
+        });
+      });
+
+      // 4. Sticky nav highlight on click
+      const navLinks = document.querySelectorAll('.sticky-nav .nav-link');
+      navLinks.forEach((link) => {
+        link.addEventListener('click', () => {
+          navLinks.forEach((l) => l.classList.remove('active'));
+          link.classList.add('active');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -23,6 +23,7 @@
 - `public/index.html`: Giao diện 2 tab (`ALB` và `Shared leaderboard`), gửi request kèm `Cache-Control: no-store` và cache buster, hiển thị lỗi thật.
 - `Dockerfile`: Đóng gói trên `node:24-alpine`.
 - `.env.example`: Biến môi trường mẫu.
+- `deploy-aws.sh`: Script tự động dựng lại toàn bộ hạ tầng AWS + deploy container qua SSM (không chứa mật khẩu; lưu resource IDs vào `.deploy-state.env`).
 - `cleanup-aws.sh`: Script xóa toàn bộ tài nguyên AWS gắn tag `Project=quiz-service-seminar` đúng thứ tự.
 
 ---

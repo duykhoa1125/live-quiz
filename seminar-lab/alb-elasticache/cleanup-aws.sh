@@ -11,6 +11,7 @@ if [[ "${1:-}" != "--yes" ]]; then
 fi
 
 export PATH="$HOME/.local/bin:$PATH"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REGION="ap-southeast-2"
 
 ALB_ARN="arn:aws:elasticloadbalancing:ap-southeast-2:493093379780:loadbalancer/app/quizlab-alb/52483b687e167356"
@@ -28,6 +29,12 @@ ROUTE_TABLES=("rtb-02a64f7cdd79309b9" "rtb-06c6510df171026dd")
 SG_CACHE="sg-0d62598f5f395beb9"
 SG_BACKEND="sg-04448c78b976fe9d4"
 SG_ALB="sg-0e4de45ba1e80ee23"
+
+if [[ -f "$SCRIPT_DIR/.deploy-state.env" ]]; then
+  echo "Loading resource IDs from $SCRIPT_DIR/.deploy-state.env..."
+  # shellcheck disable=SC1091
+  source "$SCRIPT_DIR/.deploy-state.env"
+fi
 
 echo "[1/5] Deleting ALB and Target Groups..."
 aws elbv2 delete-load-balancer --region "$REGION" --load-balancer-arn "$ALB_ARN" 2>/dev/null || true
@@ -100,6 +107,8 @@ aws iam delete-instance-profile --instance-profile-name quizlab-ec2-ssm-profile 
 aws iam delete-role-policy --role-name quizlab-ec2-ssm-role --policy-name quizlab-read-valkey-param 2>/dev/null || true
 aws iam detach-role-policy --role-name quizlab-ec2-ssm-role --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore 2>/dev/null || true
 aws iam delete-role --role-name quizlab-ec2-ssm-role 2>/dev/null || true
+
+rm -f "$SCRIPT_DIR/.deploy-state.env"
 
 echo "Cleanup completed. Verify no quizlab resources remain in $REGION:"
 echo "aws ec2 describe-vpcs --region $REGION --filters Name=tag:Project,Values=quiz-service-seminar"

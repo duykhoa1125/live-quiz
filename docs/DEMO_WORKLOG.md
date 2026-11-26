@@ -17,6 +17,7 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 - Biên bản nghiệm thu (đã điền số đo thật): [ACCEPTANCE_REPORT.md](file:///home/khoa/projects/live-quiz/docs/ACCEPTANCE_REPORT.md)
 - Kịch bản 20 phút & timeline từng demo (3 phút/demo): [ALB_ElastiCache_Noi_dung_chi_tiet.md](file:///home/khoa/projects/live-quiz/docs/ALB_ElastiCache_Noi_dung_chi_tiet.md)
 - Kiến thức nền tảng & Q&A: [ALB_ElastiCache_Kien_thuc_theo_slide.md](file:///home/khoa/projects/live-quiz/docs/ALB_ElastiCache_Kien_thuc_theo_slide.md)
+- Cẩm nang HTML tổng hợp cho người mới học Cloud: [ALB_ElastiCache_Cloud_Guide.html](file:///home/khoa/projects/live-quiz/docs/ALB_ElastiCache_Cloud_Guide.html)
 
 ### Thông tin cấu hình môi trường (đã dựng & đã cleanup)
 | Thành phần | Giá trị thực tế | Ghi chú |
@@ -531,3 +532,79 @@ File này lưu toàn bộ lịch sử thực hiện công việc, thao tác chi 
 
 ### 6. Đối chiếu tiêu chí nghiệm thu
 - Tiêu chí `10` (*Cleanup và chi phí theo cấu hình*) chuyển sang **Đạt** → Hoàn tất **10/10** tiêu chí ở Mục 12 của `docs/ALB_ElastiCache_Demo_Handover.md`.
+
+## Entry #14 — 2026-11-26 09:36 — Tạo sẵn script triển khai tự động `deploy-aws.sh` (chưa chạy)
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Hạ tầng AWS & Tài liệu.
+- **Mục tiêu:** Viết sẵn script `seminar-lab/alb-elasticache/deploy-aws.sh` để sau này có thể dựng lại toàn bộ hạ tầng AWS thật và deploy ứng dụng chỉ bằng 1 lệnh (để sẵn trong repo, **không chạy** tạo tài nguyên ngay theo đúng yêu cầu của người dùng).
+- **File tạo/chỉnh sửa:**
+  - Tạo mới: `seminar-lab/alb-elasticache/deploy-aws.sh`
+  - Cập nhật: `seminar-lab/alb-elasticache/cleanup-aws.sh` (tự đọc `.deploy-state.env` nếu có để dọn đúng resource IDs của lần deploy mới), `.gitignore` (thêm `.deploy-state.env`), `seminar-lab/alb-elasticache/README.md`
+
+### 2. Các thao tác đã thực hiện
+1. Viết `deploy-aws.sh` tái lập toàn bộ kiến trúc đã kiểm chứng ở `Entry #5` tại `ap-southeast-2` (hoặc override `AWS_REGION`, `PRESENTER_CIDR`, `OWNER_TAG`):
+   - Kiểm tra identity, tự lấy IP hiện tại mở TCP `80` cho `quizlab-sg-alb`, chặn chạy đè nếu `quizlab-alb` hoặc `quizlab-valkey` đã tồn tại.
+   - Tạo IAM role/profile SSM, VPC (`10.20.0.0/16`), 2 public + 2 private subnets, IGW, route tables, 3 Security Groups.
+   - Tạo ElastiCache Valkey `8.2` (`cache.t4g.micro`, TLS + RBAC), sinh mật khẩu ngẫu nhiên khi chạy lưu trực tiếp vào SSM Parameter Store `SecureString` `/quizlab/valkey_password` (không in ra terminal và không lưu vào file/Git).
+   - Launch 2 EC2 `t3.micro` (AL2023 x86_64 lấy động qua SSM AMI parameter), tạo ALB + `tg-main`/`tg-a`/`tg-b` + rules `/lab/a/*` & `/lab/b/*`, lưu IDs vào `.deploy-state.env`.
+   - Đóng gói code, deploy qua `aws ssm send-command` để build & chạy container `quizlab`, chờ target healthy và kiểm tra `/`, `/health`, `/lab/a/api/cache-status`, `/lab/b/api/cache-status`.
+2. Gán quyền thực thi `chmod +x` và kiểm tra cú pháp bash (`bash -n`) cho cả `deploy-aws.sh` và `cleanup-aws.sh`.
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `INFO` (Đã viết xong và kiểm tra cú pháp `bash -n` đạt; **chưa thực thi** lên AWS theo đúng yêu cầu để tránh phát sinh chi phí).
+
+### 4. Cách tự thực hiện lại khi cần dựng lab
+- Khi cần dựng lại trước giờ báo cáo:
+  ```bash
+  ./seminar-lab/alb-elasticache/deploy-aws.sh
+  ```
+- Khi xong việc, chạy dọn tài nguyên (tự đọc `.deploy-state.env` mới nhất):
+  ```bash
+  ./seminar-lab/alb-elasticache/cleanup-aws.sh --yes
+  ```
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- `deploy-aws.sh` chưa được chạy thử trực tiếp từ đầu đến cuối trong một lần thực thi nguyên khối (chỉ vừa viết dựa trên đúng chuỗi lệnh đã kiểm chứng ở `Entry #5` và kiểm tra cú pháp tĩnh `bash -n`).
+- Đảm bảo tài khoản vẫn có sẵn quyền tại region chọn (`ap-southeast-2`).
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Không làm thay đổi kết quả `10/10` tiêu chí đã Đạt; cung cấp công cụ dựng lại nhanh cho buổi thuyết trình nếu cần chạy live.
+
+
+## Entry #15 — 2026-11-26 09:45 — Tạo cẩm nang HTML tổng hợp kiến thức, luồng chạy và bài học Cloud Computing
+
+### 1. Đã làm gì (Mục tiêu & Phạm vi)
+- **Hạng mục:** Tài liệu & Tổng hợp học tập (`Cloud Computing` cho người mới bắt đầu).
+- **Mục tiêu:** Tạo một file HTML độc lập, dễ hiểu, giải thích toàn bộ khái niệm hạ tầng AWS, kiến trúc, 5 luồng chạy thực tế, các điểm dễ hiểu nhầm khi hỏi đáp, 7 bài học thực chiến rút ra từ `Entry #1` → `Entry #14`, chi phí và tổng kết nghiệm thu.
+- **File tạo/chỉnh sửa:**
+  - Tạo mới & hoàn thiện: `docs/ALB_ElastiCache_Cloud_Guide.html`
+  - Cập nhật mục tài liệu tham chiếu & nhật ký: `docs/DEMO_WORKLOG.md`
+
+### 2. Các thao tác đã thực hiện (Từng bước tái lập được)
+1. Biên soạn `docs/ALB_ElastiCache_Cloud_Guide.html` theo hệ màu sáng editorial (`#EFE6D5`, `#FBF5E6`, `#F2E7D1`, `#F5DF3D`, `#F27127`, `#181613`) và 3 font hỗ trợ tiếng Việt (`Be Vietnam Pro`, `IBM Plex Mono`, `Lora`), không phụ thuộc thư viện JS ngoài:
+   - **Phần 1:** Bài toán nền tảng Live Quiz nhiều backend và từ điển 10 khái niệm Cloud có bộ lọc tương tác (`Region/AZ`, `VPC/Subnet/IGW`, `SG 3 lớp`, `EC2 & Docker`, `IAM Role & SSM`, `ALB/Listener/Rules`, `Target Group & Health Check`, `ElastiCache Valkey`, `Sorted Set/TTL/Eviction`, `TLS & RBAC`) kèm ví dụ đời thường.
+   - **Phần 2:** Sơ đồ kiến trúc SVG nội tuyến (`10.20.0.0/16` trên 2 AZ của `ap-southeast-2`) + trình xem tương tác **5 luồng chạy** từng bước (`Luồng 1` phân phối ALB, `Luồng 2` dừng A & failover Demo 1, `Luồng 3` strip prefix & RAM riêng, `Luồng 4` shared leaderboard Demo 2, `Luồng 5` quy trình deploy qua SSM & bảo mật secret).
+   - **Phần 3:** Bảng đối chiếu 7 điểm dễ hiểu nhầm kỹ thuật và phần Accordion 4 câu hỏi Q&A seminar thường gặp.
+   - **Phần 4:** 7 bài học thực chiến từ các lỗi và số đo thật của dự án (SCP chặn `ap-southeast-1`, Valkey RBAC `default` + `ioredis`, xử lý lộ secret traceback khi `put-parameter`, độ lệch giữa số cấu hình Health Check `5s×2` với số đo thật `7.29s–13.16s`, bắt `SIGTERM` dừng container nhanh, font/IP động/HTTP-HTTPS, và hậu kiểm AWS sau cleanup khi typo 1 ký tự làm kẹt `vpc-0ef86bf0b601de975`).
+   - **Phần 5:** Bảng chi phí tham khảo `ap-southeast-2`, tổng kết `10/10` tiêu chí nghiệm thu và danh mục file tra cứu trong repo.
+2. Dọn button thừa trong `#glossaryFilters`, đồng bộ icon mở sẵn (`−`) ở mục Q&A đầu tiên và cập nhật chính xác đường dẫn `docs/video/demo1.mp4` (`1m33s`) / `docs/demo2.mp4` (`2m13s`).
+3. Kiểm tra tĩnh file bằng `python3` (`html.parser` kiểm tra đóng mở thẻ HTML/SVG, kiểm tra `getElementById`, quét bí mật trên 19 file) và kiểm tra cú pháp JavaScript nội tuyến bằng `node` (`vm.Script`).
+
+### 3. Kết quả quan sát thực tế
+- **Trạng thái:** `PASS`
+- Kết quả kiểm tra trên `docs/ALB_ElastiCache_Cloud_Guide.html`:
+  - `HTML_VALID BYTES=61652 LINES=1187 SVGS=8 UNCLOSED=0 TAG_ERRORS=0 STATIC_IDS_MISSING_ONLY_DYNAMIC=['nextStepBtn', 'prevStepBtn']` (`prevStepBtn`/`nextStepBtn` được tạo động bên trong `renderFlow()`).
+  - `JS_SYNTAX_OK bytes=9375` (kiểm tra bằng `/home/khoa/.local/bin/node` qua `vm.Script`).
+  - `SCANNED_FILES=19` → `SECRET_SCAN_CLEAN`.
+
+### 4. Cách tự thực hiện lại / Mở xem & kiểm tra
+- Mở trực tiếp `docs/ALB_ElastiCache_Cloud_Guide.html` bằng trình duyệt (không cần dựng backend hay chạy tài nguyên AWS; chỉ cần kết nối mạng nếu muốn trình duyệt tải Google Fonts, còn toàn bộ layout, SVG và JavaScript tương tác đều chạy nội bộ trong file).
+- Không chạy `deploy-aws.sh` trong lượt làm việc này; tài nguyên AWS của lab vẫn giữ nguyên trạng thái đã cleanup 100%.
+
+### 5. Lưu ý để giải đáp nếu có người hỏi & Giới hạn
+- Tài liệu HTML tổng hợp đúng số đo thực tế đã quan sát từ các lần chạy AWS trước đó (`Entry #5`, `#11`, `#12`, `#13`), không thêm số đo suy đoán.
+- Đã kiểm tra cấu trúc HTML/SVG và cú pháp JS bằng parser và `vm.Script`; chưa chụp lại màn hình render trực quan file HTML này qua browser subagent.
+
+### 6. Đối chiếu tiêu chí nghiệm thu
+- Không làm thay đổi bảng tổng hợp **10/10 tiêu chí đã Đạt** ở Mục 12 của `docs/ALB_ElastiCache_Demo_Handover.md`; bổ sung tài liệu học tập trực quan giúp người mới nắm nhanh toàn bộ kiến trúc và kinh nghiệm thực tế của dự án.

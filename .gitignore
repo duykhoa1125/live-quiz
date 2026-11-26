@@ -2,6 +2,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+.deploy-state.env
 *.pem
 *.tfstate
 *.tfstate.*
